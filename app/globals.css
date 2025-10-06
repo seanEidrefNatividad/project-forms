@@ -66,3 +66,51 @@
     @apply bg-background text-foreground;
   }
 }
+
+ol {
+  list-style-type: decimal;
+}
+@layer component {
+  .side-nav {
+    background: hsl(var(--secondary));
+    color: hsl(var(--secondary-foreground));
+  }
+  .nav-links {
+    background: hsl(var(--secondary));
+    color: hsl(var(--secondary-foreground));
+  }
+}
+
+/* .btnn {
+  @apply hover:bg-blue-700;
+} */
+
+.topbar {
+  background-color: 'red';
+  height: '100px';
+  width: '100%';
+}
+
+/* base row look; keep simple since styles can be inline */
+.listItem {
+  /* if your parent is a flex container, avoid stretching */
+  /* align-self: flex-start; */
+  padding: 10px 12px;
+  margin-bottom: 8;
+  border: "1px solid #e5e7eb";
+  border-radius: 10;
+  background: "white";
+}
+
+/* make dragged item float above siblings; shadow purely visual */
+.item--dragging {
+  box-shadow: 0 10px 24px rgba(0,0,0,.15);
+  opacity: .2;
+}
+
+/* optionally disable pointer events on inner content while dragging */
+.item__container--dragging {
+  align-self: flex-start;
+  pointer-events: none;
+}
+
