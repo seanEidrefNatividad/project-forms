@@ -10,8 +10,8 @@ export default async function Page() {
   };
 
   return (
-    <div style={{ padding: 24, maxWidth: 520 }}>
-      <h1>Sortable with Handle</h1>
+    <div className="container mx-auto max-w-screen-md md:p-6">
+      <h1 className="p-2">Sortable with Handle</h1>
       <NoSSRQuestionList initial={formData.questions} />
     </div>
   );

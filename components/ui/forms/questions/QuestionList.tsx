@@ -148,7 +148,7 @@ export default function QuestionList({ initial }: { initial: Item[] }) {
 
   return (
     <>
-      <button onClick={addQuestion}>
+      <button onClick={addQuestion} className="mb-4 ml-4 p-4 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
         Add question
       </button>
       <DndContext
@@ -160,7 +160,7 @@ export default function QuestionList({ initial }: { initial: Item[] }) {
         onDragCancel={() => setActiveItem(null)}
       >
         <SortableContext items={ids} strategy={verticalListSortingStrategy}>
-          <ol style={{ listStyleType: "decimal", paddingLeft: 24 }}>
+          <ol style={{ listStyleType: "decimal", paddingLeft: 24}}>
             {items.map((item) => (
               <QuestionItem key={item.id} item={item}/>
             ))}
