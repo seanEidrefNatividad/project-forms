@@ -10,7 +10,7 @@ import Handle from "../handle";
 type Option = { id: string; title: string; };
 type Item = { id: string; title: string; options: Option[]; };
 
-export default function QuestionItem({ item }: { item: Item}) {
+export default function QuestionItem({ item, addOption }: { item: Item, addOption:(parentId:string)=>void }) {
   const {
     setNodeRef,
     setActivatorNodeRef, // attach this to the handle
@@ -36,6 +36,7 @@ export default function QuestionItem({ item }: { item: Item}) {
         <div className="w-full bg-green-500">
           <span style={{ flex: 1 }}>{item.title}</span>
           <OptionList items={item.options} parentId={item.id} />
+          <button onClick={() => addOption(item.id)} style={{ marginLeft: 'auto' }}>+ Add option</button>
         </div>
       </div>
     </li>

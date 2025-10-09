@@ -34,7 +34,12 @@ export default function QuestionList({ initial }: { initial: Item[] }) {
   const [items, setItems] = useState<Item[]>(initial);
 
   const add = (q: Item) => setItems((prev) => [...prev, q]);
-
+  const insertOption = (parentId: string, o: Option) => {
+    setItems(prev =>
+      prev.map(q => (q.id === parentId ? { ...q, options: [...q.options, o] } : q))
+    );
+  };
+    
   const [activeItem, setActiveItem] = useState<ActiveDrag | null>(null);
 
   function handleDragStart(e: DragStartEvent) {
@@ -69,6 +74,7 @@ export default function QuestionList({ initial }: { initial: Item[] }) {
   const RAND_ID = Date.now();
   // const addQuestion = () => add({ id: `q_${RAND_ID}`, title:'Untitled question', type: "short-text", options: [{id:`o_1${RAND_ID}`, title:"option 1"}, {id:`o_2${RAND_ID}`, title:"option 2"}, {id:`o_3${RAND_ID}`, title:"option 3"}]});
   const addQuestion = () => add({ id: `q_${RAND_ID}`, title:'Untitled question', type: "short-text", options: [{id:`o_1${RAND_ID}`, title:"option 1"}]});
+  const addOption = (op:string) => insertOption(op, {id: `o_${RAND_ID}`, title:'Untitled option'});
 
 
   const sensors = useSensors(
@@ -162,14 +168,14 @@ export default function QuestionList({ initial }: { initial: Item[] }) {
         <SortableContext items={ids} strategy={verticalListSortingStrategy}>
           <ol style={{ listStyleType: "decimal", paddingLeft: 24}}>
             {items.map((item) => (
-              <QuestionItem key={item.id} item={item}/>
+              <QuestionItem key={item.id} item={item} addOption={addOption}/>
             ))}
           </ol>
         </SortableContext>
 
         <DragOverlay dropAnimation={{ duration: 180 }}>
           {activeItem?.type === "question" ? (
-            <QuestionItem item={activeItem.item} />
+             <QuestionItem item={activeItem.item} addOption={addOption} />
               // <div className="rounded-xl border bg-white p-3 shadow-2xl opacity-100 scale-100">
               //   <h4 className="font-medium mb-1">{activeItem.item.title}</h4>
               //   <p className="text-xs opacity-70">{activeItem.item.options.length} options</p>
