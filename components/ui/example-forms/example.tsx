@@ -56,247 +56,247 @@ type ItemId3 = {
 type child = string[]
 
 
-const SortableItem: React.FC<{ id: ItemId, items2: ItemId2[], setItems2: React.Dispatch<React.SetStateAction<ItemId2[]>>; }> = ({ id, items2, setItems2 }) => {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging, setActivatorNodeRef } =
-    useSortable({ id });
+// const SortableItem: React.FC<{ id: ItemId, items2: ItemId2[], setItems2: React.Dispatch<React.SetStateAction<ItemId2[]>>; }> = ({ id, items2, setItems2 }) => {
+//   const { attributes, listeners, setNodeRef, transform, transition, isDragging, setActivatorNodeRef } =
+//     useSortable({ id });
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
-    useSensor(TouchSensor),
-  );
+//   const sensors = useSensors(
+//     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+//     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+//     useSensor(TouchSensor),
+//   );
 
-  const children = React.useMemo(
-    () => items2.filter((it) => it.parent === id),
-    [items2, id]
-  );  
+//   const children = React.useMemo(
+//     () => items2.filter((it) => it.parent === id),
+//     [items2, id]
+//   );  
 
-  const [activeItem, setActiveItem] = React.useState<UniqueIdentifier | null>(null);
+//   const [activeItem, setActiveItem] = React.useState<UniqueIdentifier | null>(null);
 
-  const handleDragStart = ({ active }: DragStartEvent) => {
-    setActiveItem(active.id);
-  }
+//   const handleDragStart = ({ active }: DragStartEvent) => {
+//     setActiveItem(active.id);
+//   }
 
-  const handleDragEnd = ({ active, over }: DragEndEvent) => {
-    setActiveItem(null)
-    if (!over || active.id === over.id) return;
+//   const handleDragEnd = ({ active, over }: DragEndEvent) => {
+//     setActiveItem(null)
+//     if (!over || active.id === over.id) return;
 
-    setItems2(prev => {
-      // find this parent group
-      const groupIndex = prev.findIndex(g => g.parent === id);
-      if (groupIndex === -1) return prev;
+//     setItems2(prev => {
+//       // find this parent group
+//       const groupIndex = prev.findIndex(g => g.parent === id);
+//       if (groupIndex === -1) return prev;
 
-      const group = prev[groupIndex];
-      const oldIndex = group.id.indexOf(String(active.id));
-      const newIndex = group.id.indexOf(String(over.id));
-      if (oldIndex === -1 || newIndex === -1) return prev;
+//       const group = prev[groupIndex];
+//       const oldIndex = group.id.indexOf(String(active.id));
+//       const newIndex = group.id.indexOf(String(over.id));
+//       if (oldIndex === -1 || newIndex === -1) return prev;
 
-      const next = [...prev];
-      next[groupIndex] = {
-        ...group,
-        id: arrayMove(group.id, oldIndex, newIndex),
-      };
-      return next;
-    });
-  };
+//       const next = [...prev];
+//       next[groupIndex] = {
+//         ...group,
+//         id: arrayMove(group.id, oldIndex, newIndex),
+//       };
+//       return next;
+//     });
+//   };
 
-  const style: React.CSSProperties = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    userSelect: "none",
-    cursor: "grab",
-    background: "white",
-    border: "1px solid #e5e7eb",
-    borderRadius: 12,
-    padding: "10px 12px",
-    boxShadow: isDragging ? "0 10px 20px rgba(0,0,0,0.12)" : "none",
-    opacity: isDragging ? .2 : 1,
-    touchAction: "none",
-  };
+//   const style: React.CSSProperties = {
+//     transform: CSS.Transform.toString(transform),
+//     transition,
+//     userSelect: "none",
+//     cursor: "grab",
+//     background: "white",
+//     border: "1px solid #e5e7eb",
+//     borderRadius: 12,
+//     padding: "10px 12px",
+//     boxShadow: isDragging ? "0 10px 20px rgba(0,0,0,0.12)" : "none",
+//     opacity: isDragging ? .2 : 1,
+//     touchAction: "none",
+//   };
 
-  return (
-    <li ref={setNodeRef} style={{ listStyle: "none", marginBottom: 8 }}>
-      <div style={style}>
-        <button ref={setActivatorNodeRef} {...attributes} {...listeners} style={{ display: "inline-block", width: 18, marginRight: 8 }}>⠿</button>
-        {id}
-        <DndContext
-          sensors={sensors}
-          modifiers={[restrictToVerticalAxis]}
-          onDragStart={handleDragStart}
-          onDragEnd={handleDragEnd}
-          collisionDetection={closestCenter}
-        >
-          <SortableContext items={children[0]['id']} strategy={verticalListSortingStrategy}>
-            <ul style={{ padding: 0, margin: 0 }}>
-              {children[0]['id'].map((item) => (
-                <SortableItem2 key={item} id={item} />
-              ))}
-            </ul>
-          </SortableContext>
+//   return (
+//     <li ref={setNodeRef} style={{ listStyle: "none", marginBottom: 8 }}>
+//       <div style={style}>
+//         <button ref={setActivatorNodeRef} {...attributes} {...listeners} style={{ display: "inline-block", width: 18, marginRight: 8 }}>⠿</button>
+//         {id}
+//         <DndContext
+//           sensors={sensors}
+//           modifiers={[restrictToVerticalAxis]}
+//           onDragStart={handleDragStart}
+//           onDragEnd={handleDragEnd}
+//           collisionDetection={closestCenter}
+//         >
+//           <SortableContext items={children[0]['id']} strategy={verticalListSortingStrategy}>
+//             <ul style={{ padding: 0, margin: 0 }}>
+//               {children[0]['id'].map((item) => (
+//                 <SortableItem2 key={item} id={item} />
+//               ))}
+//             </ul>
+//           </SortableContext>
 
-          <DragOverlay>
-            {activeItem ? (
-              <div style={{ boxShadow: "0 10px 20px rgba(0,0,0,0.12)", opacity: 1 }}>
-                <span style={{ display: "inline-block", width: 18, marginRight: 8 }}>⠿</span>
-                {activeItem} 
-              </div>
-            ) : null}
-          </DragOverlay>
+//           <DragOverlay>
+//             {activeItem ? (
+//               <div style={{ boxShadow: "0 10px 20px rgba(0,0,0,0.12)", opacity: 1 }}>
+//                 <span style={{ display: "inline-block", width: 18, marginRight: 8 }}>⠿</span>
+//                 {activeItem} 
+//               </div>
+//             ) : null}
+//           </DragOverlay>
 
-        </DndContext>
-      </div>
-    </li>
-  );
-};
+//         </DndContext>
+//       </div>
+//     </li>
+//   );
+// };
 
-const SortableItem2: React.FC<{ id: ItemId }> = ({ id }) => {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging, setActivatorNodeRef } =
-    useSortable({ id });
+// const SortableItem2: React.FC<{ id: ItemId }> = ({ id }) => {
+//   const { attributes, listeners, setNodeRef, transform, transition, isDragging, setActivatorNodeRef } =
+//     useSortable({ id });
 
-  const style: React.CSSProperties = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    userSelect: "none",
-    cursor: "grab",
-    background: "white",
-    border: "1px solid #e5e7eb",
-    borderRadius: 12,
-    padding: "10px 12px",
-    boxShadow: isDragging ? "0 10px 20px rgba(0,0,0,0.12)" : "none",
-    opacity: isDragging ? .2 : 1,
-    touchAction: "none",
-  };
+//   const style: React.CSSProperties = {
+//     transform: CSS.Transform.toString(transform),
+//     transition,
+//     userSelect: "none",
+//     cursor: "grab",
+//     background: "white",
+//     border: "1px solid #e5e7eb",
+//     borderRadius: 12,
+//     padding: "10px 12px",
+//     boxShadow: isDragging ? "0 10px 20px rgba(0,0,0,0.12)" : "none",
+//     opacity: isDragging ? .2 : 1,
+//     touchAction: "none",
+//   };
 
-  return (
-    <li ref={setNodeRef} style={{ listStyle: "none", marginBottom: 8 }}>
-      <div style={style}>
-        <span ref={setActivatorNodeRef} {...attributes} {...listeners} style={{ display: "inline-block", width: 18, marginRight: 8 }}>⠿</span>
-        {id}
-      </div>
-    </li>
-  );
-};
+//   return (
+//     <li ref={setNodeRef} style={{ listStyle: "none", marginBottom: 8 }}>
+//       <div style={style}>
+//         <span ref={setActivatorNodeRef} {...attributes} {...listeners} style={{ display: "inline-block", width: 18, marginRight: 8 }}>⠿</span>
+//         {id}
+//       </div>
+//     </li>
+//   );
+// };
 
-const SortableItem3: React.FC<{ id: ItemId, child: child[], setItems3: React.Dispatch<React.SetStateAction<ItemId3[]>>; }> = ({ id, child, setItems3 }) => {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging, setActivatorNodeRef } =
-    useSortable({ id });
+// const SortableItem3: React.FC<{ id: ItemId, child: child[], setItems3: React.Dispatch<React.SetStateAction<ItemId3[]>>; }> = ({ id, child, setItems3 }) => {
+//   const { attributes, listeners, setNodeRef, transform, transition, isDragging, setActivatorNodeRef } =
+//     useSortable({ id });
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
-    useSensor(TouchSensor),
-  );
+//   const sensors = useSensors(
+//     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+//     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+//     useSensor(TouchSensor),
+//   );
 
-  // const children = React.useMemo(
-  //   () => items2.filter((it) => it.parent === id),
-  //   [items2, id]
-  // );  
+//   // const children = React.useMemo(
+//   //   () => items2.filter((it) => it.parent === id),
+//   //   [items2, id]
+//   // );  
 
-  const [activeItem, setActiveItem] = React.useState<UniqueIdentifier | null>(null);
+//   const [activeItem, setActiveItem] = React.useState<UniqueIdentifier | null>(null);
 
-  const handleDragStart = ({ active }: DragStartEvent) => {
-    setActiveItem(active.id);
-  }
+//   const handleDragStart = ({ active }: DragStartEvent) => {
+//     setActiveItem(active.id);
+//   }
 
-  const handleDragEnd = ({ active, over }: DragEndEvent) => {
-    setActiveItem(null)
-    if (!over || active.id === over.id) return;
+//   const handleDragEnd = ({ active, over }: DragEndEvent) => {
+//     setActiveItem(null)
+//     if (!over || active.id === over.id) return;
 
-    setItems3(prev => {
-      // find this parent group
-      const groupIndex = prev.findIndex(g => g.parent === id);
-      if (groupIndex === -1) return prev;
+//     setItems3(prev => {
+//       // find this parent group
+//       const groupIndex = prev.findIndex(g => g.parent === id);
+//       if (groupIndex === -1) return prev;
 
-      const group = prev[groupIndex];
-      const oldIndex = group.child.indexOf(String(active.id));
-      const newIndex = group.child.indexOf(String(over.id));
-      if (oldIndex === -1 || newIndex === -1) return prev;
+//       const group = prev[groupIndex];
+//       const oldIndex = group.child.indexOf(String(active.id));
+//       const newIndex = group.child.indexOf(String(over.id));
+//       if (oldIndex === -1 || newIndex === -1) return prev;
 
-      const next = [...prev];
-      next[groupIndex] = {
-        ...group,
-        child: arrayMove(group.child, oldIndex, newIndex),
-      };
-      return next;
-    });
-  };
+//       const next = [...prev];
+//       next[groupIndex] = {
+//         ...group,
+//         child: arrayMove(group.child, oldIndex, newIndex),
+//       };
+//       return next;
+//     });
+//   };
 
-  const style: React.CSSProperties = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    userSelect: "none",
-    cursor: "grab",
-    background: "white",
-    border: "1px solid #e5e7eb",
-    borderRadius: 12,
-    padding: "10px 12px",
-    boxShadow: isDragging ? "0 10px 20px rgba(0,0,0,0.12)" : "none",
-    opacity: isDragging ? .2 : 1,
-    touchAction: "none",
-  };
+//   const style: React.CSSProperties = {
+//     transform: CSS.Transform.toString(transform),
+//     transition,
+//     userSelect: "none",
+//     cursor: "grab",
+//     background: "white",
+//     border: "1px solid #e5e7eb",
+//     borderRadius: 12,
+//     padding: "10px 12px",
+//     boxShadow: isDragging ? "0 10px 20px rgba(0,0,0,0.12)" : "none",
+//     opacity: isDragging ? .2 : 1,
+//     touchAction: "none",
+//   };
 
-  return (
-    <li ref={setNodeRef} style={{ listStyle: "none", marginBottom: 8 }}>
-      <div style={style}>
-        <button ref={setActivatorNodeRef} {...attributes} {...listeners} style={{ display: "inline-block", width: 18, marginRight: 8 }}>⠿</button>
-        {id}
-        <DndContext
-          sensors={sensors}
-          modifiers={[restrictToVerticalAxis]}
-          onDragStart={handleDragStart}
-          onDragEnd={handleDragEnd}
-          collisionDetection={closestCenter}
-        >
-          <SortableContext items={child} strategy={verticalListSortingStrategy}>
-            <ul style={{ padding: 0, margin: 0 }}>
-              {child.map((item) => (
-                <SortableItem4 key={item} id={item} />
-              ))}
-            </ul>
-          </SortableContext>
+//   return (
+//     <li ref={setNodeRef} style={{ listStyle: "none", marginBottom: 8 }}>
+//       <div style={style}>
+//         <button ref={setActivatorNodeRef} {...attributes} {...listeners} style={{ display: "inline-block", width: 18, marginRight: 8 }}>⠿</button>
+//         {id}
+//         <DndContext
+//           sensors={sensors}
+//           modifiers={[restrictToVerticalAxis]}
+//           onDragStart={handleDragStart}
+//           onDragEnd={handleDragEnd}
+//           collisionDetection={closestCenter}
+//         >
+//           <SortableContext items={child} strategy={verticalListSortingStrategy}>
+//             <ul style={{ padding: 0, margin: 0 }}>
+//               {child.map((item) => (
+//                 <SortableItem4 key={item} id={item} />
+//               ))}
+//             </ul>
+//           </SortableContext>
 
-          <DragOverlay>
-            {activeItem ? (
-              <div style={{ boxShadow: "0 10px 20px rgba(0,0,0,0.12)", opacity: 1 }}>
-                <span style={{ display: "inline-block", width: 18, marginRight: 8 }}>⠿</span>
-                {activeItem} 
-              </div>
-            ) : null}
-          </DragOverlay>
+//           <DragOverlay>
+//             {activeItem ? (
+//               <div style={{ boxShadow: "0 10px 20px rgba(0,0,0,0.12)", opacity: 1 }}>
+//                 <span style={{ display: "inline-block", width: 18, marginRight: 8 }}>⠿</span>
+//                 {activeItem} 
+//               </div>
+//             ) : null}
+//           </DragOverlay>
 
-        </DndContext>
-      </div>
-    </li>
-  );
-};
+//         </DndContext>
+//       </div>
+//     </li>
+//   );
+// };
 
-const SortableItem4: React.FC<{ id: string }> = ({ id }) => {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging, setActivatorNodeRef } =
-    useSortable({ id });
+// const SortableItem4: React.FC<{ id: string }> = ({ id }) => {
+//   const { attributes, listeners, setNodeRef, transform, transition, isDragging, setActivatorNodeRef } =
+//     useSortable({ id });
 
-  const style: React.CSSProperties = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    userSelect: "none",
-    cursor: "grab",
-    background: "white",
-    border: "1px solid #e5e7eb",
-    borderRadius: 12,
-    padding: "10px 12px",
-    boxShadow: isDragging ? "0 10px 20px rgba(0,0,0,0.12)" : "none",
-    opacity: isDragging ? .2 : 1,
-    touchAction: "none",
-  };
+//   const style: React.CSSProperties = {
+//     transform: CSS.Transform.toString(transform),
+//     transition,
+//     userSelect: "none",
+//     cursor: "grab",
+//     background: "white",
+//     border: "1px solid #e5e7eb",
+//     borderRadius: 12,
+//     padding: "10px 12px",
+//     boxShadow: isDragging ? "0 10px 20px rgba(0,0,0,0.12)" : "none",
+//     opacity: isDragging ? .2 : 1,
+//     touchAction: "none",
+//   };
 
-  return (
-    <li ref={setNodeRef} style={{ listStyle: "none", marginBottom: 8 }}>
-      <div style={style}>
-        <span ref={setActivatorNodeRef} {...attributes} {...listeners} style={{ display: "inline-block", width: 18, marginRight: 8 }}>⠿</span>
-        {id}
-      </div>
-    </li>
-  );
-};
+//   return (
+//     <li ref={setNodeRef} style={{ listStyle: "none", marginBottom: 8 }}>
+//       <div style={style}>
+//         <span ref={setActivatorNodeRef} {...attributes} {...listeners} style={{ display: "inline-block", width: 18, marginRight: 8 }}>⠿</span>
+//         {id}
+//       </div>
+//     </li>
+//   );
+// };
 
 
 // ────────────────────────────────────────────────────────────────
