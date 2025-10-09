@@ -10,6 +10,7 @@ import {
   useSensors,
   TouchSensor,
   DragOverlay,
+  type CollisionDetection,
 } from "@dnd-kit/core";
 import {
   SortableContext,
@@ -19,6 +20,18 @@ import {
 } from "@dnd-kit/sortable";
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
+
+const typeAwareClosestCenter: CollisionDetection = (args) => {
+  const { active, droppableContainers } = args;
+  const activeType = active.data.current?.type; // "parent" | "child"
+
+  const filtered = droppableContainers.filter(
+    (dc) => dc.data?.current?.type === activeType
+  );
+
+  // fall back to all if something’s wrong
+  return closestCenter({ ...args, droppableContainers: filtered.length ? filtered : droppableContainers });
+};
 
 import QuestionItem from "./QuestionItem";
 import OptionItem from "../options/OptionItem";
@@ -159,7 +172,7 @@ export default function QuestionList({ initial }: { initial: Item[] }) {
       </button>
       <DndContext
         sensors={sensors}
-        collisionDetection={closestCenter}
+        collisionDetection={typeAwareClosestCenter} 
         modifiers={[restrictToVerticalAxis]}
         onDragEnd={onDragEnd}
         onDragStart={handleDragStart}
