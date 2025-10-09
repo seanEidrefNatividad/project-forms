@@ -43,10 +43,10 @@ import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 
 type ItemId = string;
 
-type ItemId2 = {
-  parent: string;
-  id: string[]
-};
+// type ItemId2 = {
+//   parent: string;
+//   id: string[]
+// };
 
 type ItemId3 = {
   parent: string;

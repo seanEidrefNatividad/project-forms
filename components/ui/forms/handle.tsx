@@ -1,6 +1,15 @@
 "use client";
 
-export default function Handle({setActivatorNodeRef, attributes, listeners, type}: {setActivatorNodeRef: any, attributes: any, listeners: any, type:string}) {
+import React from "react";
+import type {
+  DraggableAttributes,
+} from "@dnd-kit/core";
+
+export default function Handle({setActivatorNodeRef, attributes, listeners, type}: {
+  setActivatorNodeRef: React.RefCallback<HTMLElement>;
+  attributes: DraggableAttributes;
+  listeners?: string[];
+  type:string}) {
   const handle = type === 'option' ? '⋮⋮' : '☰';
   const topMiddle = type === 'question' ? {
     position: 'absolute',
@@ -17,13 +26,10 @@ export default function Handle({setActivatorNodeRef, attributes, listeners, type
       title="Drag to reorder"
       style={{
         cursor: "grab",
-        border: "none",
-        background: "transparent",
-        padding: 4,
-        lineHeight: 1,
         fontSize: 20,
         ...topMiddle
       }}
+      className="pr-2"
     >
       {handle}
     </button>
