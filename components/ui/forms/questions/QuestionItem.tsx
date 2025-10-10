@@ -8,7 +8,7 @@ import OptionList from "../options/OptionList";
 import Handle from "../handle";
 import type { Item } from "../../../../src/types.ts" 
 
-export default function QuestionItem({ item, addOption }: { item: Item, addOption:(parentId:string)=>void }) {
+export default function QuestionItem({ item, addOption, removeQuestion }: { item: Item, addOption:(parentId:string)=>void, removeQuestion:(id:string)=>void }) {
   const {
     setNodeRef,
     setActivatorNodeRef, // attach this to the handle
@@ -42,7 +42,8 @@ export default function QuestionItem({ item, addOption }: { item: Item, addOptio
         <div className="w-full">
           {/* <span style={{ flex: 1 }}>{item.title}</span> */}
           <OptionList items={item.options} parentId={item.id} />
-          <button onClick={() => addOption(item.id)} style={{ marginLeft: 'auto' }}>+ Add option</button>
+          <button onClick={() => addOption(item.id)} className="ml-4 p-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">+ Add option</button>
+          <button onClick={() => removeQuestion(item.id)} className="ml-4 p-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">- Remove question</button>
         </div>
       {/* </div> */}
     </li>

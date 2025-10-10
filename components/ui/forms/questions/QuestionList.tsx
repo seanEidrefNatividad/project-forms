@@ -47,6 +47,8 @@ export default function QuestionList({ initial }: { initial: Item[] }) {
   const [items, setItems] = useState<Item[]>(initial);
 
   const add = (q: Item) => setItems((prev) => [...prev, q]);
+  const removeQuestion = (id: string) => setItems((prev) => [...prev.filter(item => item.id != id)]);
+
   const insertOption = (parentId: string, o: Option) => {
     setItems(prev =>
       prev.map(q => (q.id === parentId ? { ...q, options: [...q.options, o] } : q))
@@ -184,7 +186,7 @@ export default function QuestionList({ initial }: { initial: Item[] }) {
         <SortableContext items={ids} strategy={verticalListSortingStrategy}>
           <ol style={{ listStyleType: "decimal"}} className="flex gap-4 flex-col">
             {items.map((item) => (
-              <QuestionItem key={item.id} item={item} addOption={addOption}/>
+              <QuestionItem key={item.id} item={item} addOption={addOption} removeQuestion={removeQuestion}/>
             ))}
           </ol>
         </SortableContext>
