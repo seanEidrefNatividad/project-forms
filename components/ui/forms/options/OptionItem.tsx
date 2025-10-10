@@ -7,7 +7,7 @@ import { CSS } from "@dnd-kit/utilities";
 import Handle from "../handle";
 import type { Option } from "../../../../src/types.ts" 
 
-export default function OptionItem({ item, parentId }: { item: Option, parentId: string}) {
+export default function OptionItem({ item, parentId, deleteOption }: { item: Option, parentId: string, deleteOption:(parentId:string, optionId:string)=>void}) {
   const {
     setNodeRef,
     setActivatorNodeRef, // attach this to the handle
@@ -29,7 +29,7 @@ export default function OptionItem({ item, parentId }: { item: Option, parentId:
       <div className="flex p-1">
         <Handle setActivatorNodeRef={setActivatorNodeRef} attributes={attributes} listeners={listeners} type={'option'}/>
         <input style={{ flex: 1 }} type="text" name="" id="" readOnly value={item.title +"asdf feasdf asdf asdfasdfasdfasdf asd fasdfasd fasd fasd fasdf asfasd sadfasdf"}/>
-        <button className="pl-3">X</button>
+        <button className="pl-3" onClick={() => deleteOption(parentId,item.id)}>X</button>
       </div>
     </li>
   );

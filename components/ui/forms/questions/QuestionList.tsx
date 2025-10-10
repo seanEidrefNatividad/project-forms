@@ -54,6 +54,11 @@ export default function QuestionList({ initial }: { initial: Item[] }) {
       prev.map(q => (q.id === parentId ? { ...q, options: [...q.options, o] } : q))
     );
   };
+  const deleteOption = (parentId: string, optionId: string) => {
+    setItems(prev =>
+      prev.map(q => (q.id === parentId ? { ...q, options: [...q.options.filter(o => o.id != optionId)] } : q))
+    );
+  };
     
   const [activeItem, setActiveItem] = useState<ActiveDrag | null>(null);
 
@@ -186,7 +191,7 @@ export default function QuestionList({ initial }: { initial: Item[] }) {
         <SortableContext items={ids} strategy={verticalListSortingStrategy}>
           <ol style={{ listStyleType: "decimal"}} className="flex gap-4 flex-col">
             {items.map((item) => (
-              <QuestionItem key={item.id} item={item} addOption={addOption} removeQuestion={removeQuestion}/>
+              <QuestionItem key={item.id} item={item} addOption={addOption} removeQuestion={removeQuestion} deleteOption={deleteOption}/>
             ))}
           </ol>
         </SortableContext>
