@@ -40,6 +40,7 @@ export default function Handle({
       title="Drag to reorder"
       style={{
         cursor: "grab",
+        touchAction: "none",
         fontSize: 20,
         ...topMiddle
       }}

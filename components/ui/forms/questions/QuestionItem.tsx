@@ -23,8 +23,6 @@ export default function QuestionItem({ item, addOption }: { item: Item, addOptio
     ...(transform ? { transform: CSS.Transform.toString(transform) } : {}),
     ...(transition ? { transition } : {}),
     willChange: "transform",
-    touchAction: "none",
-    // background: "white",
   };
 
   return (

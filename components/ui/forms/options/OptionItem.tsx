@@ -22,8 +22,6 @@ export default function OptionItem({ item, parentId }: { item: Option, parentId:
     ...(transform ? { transform: CSS.Transform.toString(transform) } : {}),
     ...(transition ? { transition } : {}),
     willChange: "transform",
-    touchAction: "none",
-    background: "white",
   };
 
   return (
