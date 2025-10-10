@@ -167,13 +167,9 @@ export default function QuestionList({ initial }: { initial: Item[] }) {
 
   return (
     <>
-      <div className="w-full bg-red-200 flex justify-end align-items-center p-2 absolute sticky top-0">
+      <div className="w-full flex justify-end align-items-center p-2 absolute sticky top-0">
         < ThemeSwitcher />
       </div>
-      <label htmlFor="">
-        Toggle mode
-        <input type="checkbox" name="" id="" />
-      </label>
       <button onClick={addQuestion} className="mb-4 ml-4 p-4 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
         Add question
       </button>
@@ -196,7 +192,7 @@ export default function QuestionList({ initial }: { initial: Item[] }) {
         <DragOverlay dropAnimation={{ duration: 180 }}>
           {activeItem?.type === "question" ? (
             //  <QuestionItem item={activeItem.item} addOption={addOption} />
-              <div className="rounded-xl border bg-white p-3 shadow-2xl opacity-100 scale-100">
+              <div className="drag-overlay rounded-xl border p-3 shadow-2xl opacity-100 scale-100">
                 <h4 className="font-medium mb-1">{activeItem.item.title}</h4>
                 <p className="text-xs opacity-70">{activeItem.item.options.length} options</p>
               </div>

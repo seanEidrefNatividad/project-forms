@@ -65,6 +65,9 @@
   body {
     @apply bg-background text-foreground;
   }
+  input, select, .drag-overlay {
+    @apply bg-background;
+  }
 }
 
 ol {
