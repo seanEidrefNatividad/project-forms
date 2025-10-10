@@ -3,8 +3,7 @@
 import dynamic from "next/dynamic";
 
 // If you have Item/Option types exported elsewhere, import them here.
-type Option = { id: string; title: string };
-type Item = { id: string; title: string; options: Option[] };
+import type { Item } from "../../../src/types.ts" 
 
 const NoSSRQuestionList = dynamic(
   () => import("@/components/ui/forms/questions/QuestionList"),

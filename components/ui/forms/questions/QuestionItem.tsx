@@ -6,9 +6,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import OptionList from "../options/OptionList";
 import Handle from "../handle";
-
-type Option = { id: string; title: string; };
-type Item = { id: string; title: string; options: Option[]; };
+import type { Item } from "../../../../src/types.ts" 
 
 export default function QuestionItem({ item, addOption }: { item: Item, addOption:(parentId:string)=>void }) {
   const {

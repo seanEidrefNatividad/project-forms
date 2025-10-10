@@ -5,8 +5,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import Handle from "../handle";
-
-type Option = { id: string; title: string; };
+import type { Option } from "../../../../src/types.ts" 
 
 export default function OptionItem({ item, parentId }: { item: Option, parentId: string}) {
   const {

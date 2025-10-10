@@ -1,17 +1,31 @@
 "use client";
 
 import React from "react";
-import type {
-  DraggableAttributes,
-} from "@dnd-kit/core";
+import {
+  useSortable,
+} from "@dnd-kit/sortable";
 
-export default function Handle({setActivatorNodeRef, attributes, listeners, type}: {
-  setActivatorNodeRef: React.RefCallback<HTMLElement>;
-  attributes: DraggableAttributes;
-  listeners?: string[];
-  type:string}) {
+// Derive the exact types from your installed dnd-kit
+type SortableReturn = ReturnType<typeof useSortable>;
+type SortableAttrs = SortableReturn["attributes"];
+type SortableListeners = SortableReturn["listeners"];
+type SortableActivatorRef = SortableReturn["setActivatorNodeRef"];
+
+type HandleProps = {
+  setActivatorNodeRef: SortableActivatorRef;
+  attributes: SortableAttrs;
+  listeners?: SortableListeners; // can be undefined
+  type: "question" | "option" | string;
+};
+
+export default function Handle({
+  setActivatorNodeRef,
+  attributes,
+  listeners,
+  type,
+}: HandleProps) {
   const handle = type === 'option' ? '⋮⋮' : '☰';
-  const topMiddle = type === 'question' ? {
+  const topMiddle: React.CSSProperties = type === 'question' ? {
     position: 'absolute',
     top: '0',
     left: '50%',

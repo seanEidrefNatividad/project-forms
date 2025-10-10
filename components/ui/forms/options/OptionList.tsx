@@ -8,8 +8,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import OptionItem from "./OptionItem";
-
-type Option = { id: string; title: string; };
+import type { Option } from "../../../../src/types.ts" 
 
 export default function OptionList({ items, parentId }: { items: Option[], parentId: string }) {
   const ids = useMemo(() => items.map((i) => i.id), [items]);

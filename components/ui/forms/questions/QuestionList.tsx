@@ -36,8 +36,7 @@ const typeAwareClosestCenter: CollisionDetection = (args) => {
 import QuestionItem from "./QuestionItem";
 import OptionItem from "../options/OptionItem";
 
-type Option = { id: string; title: string; };
-type Item = { id: string; title: string; type: string; options: Option[]; };
+import type { Option, Item } from "../../../../src/types.ts" 
 
 type ActiveQuestion = { type: "question"; item: Item };
 type ActiveOption   = { type: "option"; item: Option; parentId: string };
