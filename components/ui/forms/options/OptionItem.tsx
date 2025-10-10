@@ -28,9 +28,10 @@ export default function OptionItem({ item, parentId }: { item: Option, parentId:
 
   return (
     <li ref={setNodeRef} style={listItem} className={`listItem ${isDragging ? 'item--dragging' : ''}`}>
-      <div className={`listItemContainer ${isDragging ? 'item__container--dragging' : ''}`}>
-       <Handle setActivatorNodeRef={setActivatorNodeRef} attributes={attributes} listeners={listeners} type={'option'}/>
-        <span style={{ flex: 1 }}>{item.title} asdf feasdf asdf asdfasdfasdfasdf asd fasdfasd fasd fasd fasdf asfasd sadfasdf</span>
+      <div className="flex p-1">
+        <Handle setActivatorNodeRef={setActivatorNodeRef} attributes={attributes} listeners={listeners} type={'option'}/>
+        <input style={{ flex: 1 }} type="text" name="" id="" readOnly value={item.title +"asdf feasdf asdf asdfasdfasdfasdf asd fasdfasd fasd fasd fasdf asfasd sadfasdf"}/>
+        <button className="pl-3">X</button>
       </div>
     </li>
   );

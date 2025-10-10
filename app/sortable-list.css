@@ -1,16 +1,17 @@
 /* do not touch */
 .listItemContainer { 
-  display: flex;
+  /* display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12;
+  gap: 12; */
 }
 
 .listItem {
   /* padding: 10px 12px; */
   margin-bottom: 8;
-  border: "1px solid #e5e7eb";
-  border-radius: 10;
+  /* border: "1px solid #e5e7eb"; */
+  /* border: "3px solid #e5e7eb"; */
+  border-radius: 5;
   background: "white";
 }
 

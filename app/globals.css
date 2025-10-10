@@ -81,13 +81,14 @@ ol {
   }
 }
 
-/* .btnn {
-  @apply hover:bg-blue-700;
+/* @media screen and (max-width: 768px) {
+  :root {
+    font-size: 14px;
+  }
 } */
 
-.topbar {
-  background-color: 'red';
-  height: '100px';
-  width: '100%';
+input {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
-

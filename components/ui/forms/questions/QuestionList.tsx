@@ -178,7 +178,7 @@ export default function QuestionList({ initial }: { initial: Item[] }) {
         onDragCancel={() => setActiveItem(null)}
       >
         <SortableContext items={ids} strategy={verticalListSortingStrategy}>
-          <ol style={{ listStyleType: "decimal", paddingLeft: 24}}>
+          <ol style={{ listStyleType: "decimal"}} className="flex gap-4 flex-col">
             {items.map((item) => (
               <QuestionItem key={item.id} item={item} addOption={addOption}/>
             ))}
@@ -187,11 +187,11 @@ export default function QuestionList({ initial }: { initial: Item[] }) {
 
         <DragOverlay dropAnimation={{ duration: 180 }}>
           {activeItem?.type === "question" ? (
-             <QuestionItem item={activeItem.item} addOption={addOption} />
-              // <div className="rounded-xl border bg-white p-3 shadow-2xl opacity-100 scale-100">
-              //   <h4 className="font-medium mb-1">{activeItem.item.title}</h4>
-              //   <p className="text-xs opacity-70">{activeItem.item.options.length} options</p>
-              // </div>
+            //  <QuestionItem item={activeItem.item} addOption={addOption} />
+              <div className="rounded-xl border bg-white p-3 shadow-2xl opacity-100 scale-100">
+                <h4 className="font-medium mb-1">{activeItem.item.title}</h4>
+                <p className="text-xs opacity-70">{activeItem.item.options.length} options</p>
+              </div>
           ) : activeItem?.type === "option" ? (
             <OptionItem item={activeItem.item} parentId={activeItem.parentId}/>
           ) : null}
