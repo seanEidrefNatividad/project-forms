@@ -204,7 +204,7 @@ export default function QuestionList({ initial }: { initial: Item[] }) {
                 <p className="text-xs opacity-70">{activeItem.item.options.length} options</p>
               </div>
           ) : activeItem?.type === "option" ? (
-            <OptionItem item={activeItem.item} parentId={activeItem.parentId}/>
+            <OptionItem item={activeItem.item} parentId={activeItem.parentId} deleteOption={deleteOption}/>
           ) : null}
         </DragOverlay>
       </DndContext>
