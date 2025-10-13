@@ -51,12 +51,12 @@ export default function QuestionList({ initial }: { initial: Item[] }) {
 
   const insertOption = (parentId: string, o: Option) => {
     setItems(prev =>
-      prev.map(q => (q.id === parentId ? { ...q, options: [...q.options, o] } : q))
+      prev.map(q => (q.type === "multiple-choice" && q.id === parentId ? { ...q, options: [...q.options, o] } : q))
     );
   };
   const deleteOption = (parentId: string, optionId: string) => {
     setItems(prev =>
-      prev.map(q => (q.id === parentId ? { ...q, options: [...q.options.filter(o => o.id != optionId)] } : q))
+      prev.map(q => (q.type === "multiple-choice" && q.id === parentId ? { ...q, options: [...q.options.filter(o => o.id != optionId)] } : q))
     );
   };
     
@@ -83,17 +83,15 @@ export default function QuestionList({ initial }: { initial: Item[] }) {
       return;
     }
 
-    // Option: find parent id (prefer the one in data)
-    const parentId = active.data.current?.parentId ?? items.find((i) => i.options.some((o) => o.id === ACTIVE_ID))?.id;
+    const parentId = active.data.current?.parentId ?? items.find((i) => i.options?.some((o) => o.id === ACTIVE_ID))?.id;
     if (!parentId) return;
     const parent = items.find((i) => i.id === parentId);
-    const opt = parent?.options.find((o) => o.id === ACTIVE_ID);
+    const opt = parent?.options?.find((o) => o.id === ACTIVE_ID);
     if (opt) setActiveItem({ type: "option", item: opt, parentId });
   }
 
   const RAND_ID = Date.now();
-  // const addQuestion = () => add({ id: `q_${RAND_ID}`, title:'Untitled question', type: "short-text", options: [{id:`o_1${RAND_ID}`, title:"option 1"}, {id:`o_2${RAND_ID}`, title:"option 2"}, {id:`o_3${RAND_ID}`, title:"option 3"}]});
-  const addQuestion = () => add({ id: `q_${RAND_ID}`, title:'Untitled question', type: "short-text", options: [{id:`o_1${RAND_ID}`, title:"option 1"}]});
+  const addQuestion = () => add({ id: `q_${RAND_ID}`, title:'Untitled question', type: "short-text"});
   const addOption = (op:string) => insertOption(op, {id: `o_${RAND_ID}`, title:'Untitled option'});
 
 
@@ -107,7 +105,7 @@ export default function QuestionList({ initial }: { initial: Item[] }) {
     const itemLookup: Record<string, number> = {};
     items.forEach((item, index) => {
       itemLookup[item.id] = index;
-      item.options.forEach((option, optionIndex) => {
+      item.options?.forEach((option, optionIndex) => {
         itemLookup[option.id] = optionIndex;
       });
     });
@@ -138,7 +136,7 @@ export default function QuestionList({ initial }: { initial: Item[] }) {
     }
 
     const updatedItems = [...items];
-    updatedItems[parentIndex].options = arrayMove(updatedItems[parentIndex].options, childIndexOld, childIndexNew);
+    updatedItems[parentIndex].options = arrayMove(updatedItems[parentIndex].options ?? [], childIndexOld, childIndexNew);
     setItems(updatedItems);
   };
 
@@ -191,7 +189,9 @@ export default function QuestionList({ initial }: { initial: Item[] }) {
         <SortableContext items={ids} strategy={verticalListSortingStrategy}>
           <ol style={{ listStyleType: "decimal"}} className="flex gap-4 flex-col">
             {items.map((item) => (
-              <QuestionItem key={item.id} item={item} onAddOption={addOption} onRemoveQuestion={removeQuestion} onDeleteOption={deleteOption}/>
+              item.type === 'multiple-choice'
+              ? <QuestionItem key={item.id} item={item} onAddOption={addOption} onRemoveQuestion={removeQuestion} onDeleteOption={deleteOption}/>
+              : <QuestionItem key={item.id} item={item} onRemoveQuestion={removeQuestion}/>
             ))}
           </ol>
         </SortableContext>
@@ -201,7 +201,7 @@ export default function QuestionList({ initial }: { initial: Item[] }) {
             //  <QuestionItem item={activeItem.item} addOption={addOption} />
               <div className="drag-overlay rounded-xl border p-3 shadow-2xl opacity-100 scale-100">
                 <h4 className="font-medium mb-1">{activeItem.item.title}</h4>
-                <p className="text-xs opacity-70">{activeItem.item.options.length} options</p>
+                <p className="text-xs opacity-70">{activeItem.item?.options?.length} options</p>
               </div>
           ) : activeItem?.type === "option" ? (
             <OptionItem item={activeItem.item} parentId={activeItem.parentId} onDeleteOption={deleteOption}/>

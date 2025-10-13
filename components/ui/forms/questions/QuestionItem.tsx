@@ -10,9 +10,9 @@ import type { Item } from "../../../../src/types.ts"
 
 type QuestionItemProps = {
   item: Item; // ensure Item has at least { id: Id; ... }
-  onAddOption: (parentId: string) => void;
+  onAddOption?: (parentId: string) => void;
   onRemoveQuestion: (id: string) => void;
-  onDeleteOption: (parentId: string, optionId: string) => void;
+  onDeleteOption?: (parentId: string, optionId: string) => void;
 };
 
 export default function QuestionItem({ item, onAddOption, onRemoveQuestion, onDeleteOption }: QuestionItemProps) {
@@ -32,6 +32,8 @@ export default function QuestionItem({ item, onAddOption, onRemoveQuestion, onDe
     willChange: "transform",
   };
 
+  const handleDelete = onDeleteOption ?? (() => {});
+
   return (
     <li ref={setNodeRef} style={listItem} className={`listItem ${isDragging ? 'item--dragging' : ''} list-inside p-8 border-2 border-solid border-black-800`}>
 
@@ -47,9 +49,15 @@ export default function QuestionItem({ item, onAddOption, onRemoveQuestion, onDe
       {/* <div className={`listItemContainer ${isDragging ? 'item__container--dragging' : ''}`}> */}
         <Handle setActivatorNodeRef={setActivatorNodeRef} attributes={attributes} listeners={listeners} type={'question'}/>
         <div className="w-full">
-          {/* <span style={{ flex: 1 }}>{item.title}</span> */}
-          <OptionList items={item.options} parentId={item.id} onDeleteOption={onDeleteOption} />
-          <button onClick={() => onAddOption(item.id)} className="ml-4 p-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">+ Add option</button>
+          {
+            item.type === "multiple-choice" && 
+            (
+              <>
+                <OptionList items={item.options ?? []} parentId={item.id} onDeleteOption={handleDelete} /> 
+                <button onClick={() => onAddOption?.(item.id)} className="ml-4 p-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">+ Add option</button>
+              </>
+            )
+          }
           <button onClick={() => onRemoveQuestion(item.id)} className="ml-4 p-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">- Remove question</button>
         </div>
       {/* </div> */}
