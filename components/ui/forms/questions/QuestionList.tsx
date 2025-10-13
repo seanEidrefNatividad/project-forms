@@ -37,7 +37,7 @@ const typeAwareClosestCenter: CollisionDetection = (args) => {
 import QuestionItem from "./QuestionItem";
 import OptionItem from "../options/OptionItem";
 
-import type { Option, Item } from "../../../../src/types.ts" 
+import type { Option, Item } from "@/src/types" 
 
 type ActiveQuestion = { type: "question"; item: Item };
 type ActiveOption   = { type: "option"; item: Option; parentId: string };
@@ -191,7 +191,7 @@ export default function QuestionList({ initial }: { initial: Item[] }) {
         <SortableContext items={ids} strategy={verticalListSortingStrategy}>
           <ol style={{ listStyleType: "decimal"}} className="flex gap-4 flex-col">
             {items.map((item) => (
-              <QuestionItem key={item.id} item={item} addOption={addOption} removeQuestion={removeQuestion} deleteOption={deleteOption}/>
+              <QuestionItem key={item.id} item={item} onAddOption={addOption} onRemoveQuestion={removeQuestion} onDeleteOption={deleteOption}/>
             ))}
           </ol>
         </SortableContext>
@@ -204,7 +204,7 @@ export default function QuestionList({ initial }: { initial: Item[] }) {
                 <p className="text-xs opacity-70">{activeItem.item.options.length} options</p>
               </div>
           ) : activeItem?.type === "option" ? (
-            <OptionItem item={activeItem.item} parentId={activeItem.parentId} deleteOption={deleteOption}/>
+            <OptionItem item={activeItem.item} parentId={activeItem.parentId} onDeleteOption={deleteOption}/>
           ) : null}
         </DragOverlay>
       </DndContext>

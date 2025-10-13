@@ -8,7 +8,14 @@ import OptionList from "../options/OptionList";
 import Handle from "../handle";
 import type { Item } from "../../../../src/types.ts" 
 
-export default function QuestionItem({ item, addOption, removeQuestion, deleteOption }: { item: Item, addOption:(parentId:string)=>void, removeQuestion:(id:string)=>void, deleteOption:(parentId:string, optionId:string)=>void }) {
+type QuestionItemProps = {
+  item: Item; // ensure Item has at least { id: Id; ... }
+  onAddOption: (parentId: string) => void;
+  onRemoveQuestion: (id: string) => void;
+  onDeleteOption: (parentId: string, optionId: string) => void;
+};
+
+export default function QuestionItem({ item, onAddOption, onRemoveQuestion, onDeleteOption }: QuestionItemProps) {
   const {
     setNodeRef,
     setActivatorNodeRef, // attach this to the handle
@@ -41,9 +48,9 @@ export default function QuestionItem({ item, addOption, removeQuestion, deleteOp
         <Handle setActivatorNodeRef={setActivatorNodeRef} attributes={attributes} listeners={listeners} type={'question'}/>
         <div className="w-full">
           {/* <span style={{ flex: 1 }}>{item.title}</span> */}
-          <OptionList items={item.options} parentId={item.id} deleteOption={deleteOption} />
-          <button onClick={() => addOption(item.id)} className="ml-4 p-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">+ Add option</button>
-          <button onClick={() => removeQuestion(item.id)} className="ml-4 p-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">- Remove question</button>
+          <OptionList items={item.options} parentId={item.id} onDeleteOption={onDeleteOption} />
+          <button onClick={() => onAddOption(item.id)} className="ml-4 p-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">+ Add option</button>
+          <button onClick={() => onRemoveQuestion(item.id)} className="ml-4 p-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">- Remove question</button>
         </div>
       {/* </div> */}
     </li>

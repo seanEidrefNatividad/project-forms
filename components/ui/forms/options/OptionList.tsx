@@ -8,17 +8,23 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import OptionItem from "./OptionItem";
-import type { Option } from "../../../../src/types.ts" 
+import type { Option } from "@/src/types" 
 
-export default function OptionList({ items, parentId, deleteOption }: { items: Option[], parentId: string, deleteOption:(parentId:string, optionId:string)=>void }) {
+type OptionListProps = {
+  items: Option[],
+  parentId: string,
+  onDeleteOption:(parentId:string, optionId:string)=>void
+};
+
+export default function OptionList({ items, parentId, onDeleteOption }: OptionListProps) {
   const ids = useMemo(() => items.map((i) => i.id), [items]);
   return (
     <SortableContext items={ids} strategy={verticalListSortingStrategy}>
-      <ol style={{ listStyleType: "none"}}>
+      <ul style={{ listStyleType: "none"}}>
         {items.map((item) => (
-          <OptionItem key={item.id} item={item} parentId={parentId} deleteOption={deleteOption}/>
+          <OptionItem key={item.id} item={item} parentId={parentId} onDeleteOption={onDeleteOption}/>
         ))}
-      </ol>
+      </ul>
     </SortableContext>
   );
 }
