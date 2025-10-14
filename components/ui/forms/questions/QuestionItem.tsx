@@ -39,21 +39,19 @@ export default function QuestionItem({ item, onAddOption, onRemoveQuestion, onDe
         </select>
       </div>
      
-      {/* <div className={`listItemContainer ${isDragging ? 'item__container--dragging' : ''}`}> */}
-        <Handle setActivatorNodeRef={setActivatorNodeRef} attributes={attributes} listeners={listeners} type={'question'}/>
-        <div className="w-full">
-          {
-            item.type === "multiple-choice" && 
-            (
-              <>
-                <OptionList items={item.options ?? []} parentId={item.id} onDeleteOption={handleDelete} /> 
-                <button onClick={() => onAddOption?.(item.id)} className="ml-4 p-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">+ Add option</button>
-              </>
-            )
-          }
-          <button onClick={() => onRemoveQuestion(item.id)} className="ml-4 p-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">- Remove question</button>
-        </div>
-      {/* </div> */}
+      <Handle setActivatorNodeRef={setActivatorNodeRef} attributes={attributes} listeners={listeners} type={'question'}/>
+      <div className="w-full">
+        {
+          item.type === "multiple-choice" && 
+          (
+            <>
+              <OptionList items={item.options ?? []} parentId={item.id} onDeleteOption={handleDelete} /> 
+              <button onClick={() => onAddOption?.(item.id)} className="ml-4 p-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">+ Add option</button>
+            </>
+          )
+        }
+        <button onClick={() => onRemoveQuestion(item.id)} className="ml-4 p-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">- Remove question</button>
+      </div>
     </li>
   );
 }

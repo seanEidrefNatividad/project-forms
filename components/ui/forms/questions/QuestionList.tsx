@@ -199,11 +199,10 @@ export default function QuestionList({ initial }: { initial: Item[] }) {
 
         <DragOverlay dropAnimation={{ duration: 180 }}>
           {activeItem?.type === "question" ? (
-            //  <QuestionItem item={activeItem.item} addOption={addOption} />
-              <div className="drag-overlay rounded-xl border p-3 shadow-2xl opacity-100 scale-100">
-                <h4 className="font-medium mb-1">{activeItem.item.title}</h4>
-                <p className="text-xs opacity-70">{activeItem.item?.options?.length} options</p>
-              </div>
+            <div className="drag-overlay rounded-xl border p-3 shadow-2xl opacity-100 scale-100">
+              <h4 className="font-medium mb-1">{activeItem.item.title}</h4>
+              <p className="text-xs opacity-70">{activeItem.item?.options?.length} options</p>
+            </div>
           ) : activeItem?.type === "option" ? (
             <OptionItem item={activeItem.item} parentId={activeItem.parentId} onDeleteOption={deleteOption}/>
           ) : null}
