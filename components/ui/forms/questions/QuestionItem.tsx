@@ -8,7 +8,7 @@ import OptionList from "../options/OptionList";
 import Handle from "../handle";
 import type { QuestionItemProps, QuestionType } from "@/src/types.ts" 
 
-export default function QuestionItem({ item, onAddOption, onRemoveQuestion, onDeleteOption, onChangeType }: QuestionItemProps) {
+export default function QuestionItem({ item, onAddOption, onRemoveQuestion, onRemoveOption, onChangeType }: QuestionItemProps) {
   const {
     setNodeRef,
     setActivatorNodeRef, // attach this to the handle
@@ -25,7 +25,7 @@ export default function QuestionItem({ item, onAddOption, onRemoveQuestion, onDe
     willChange: "transform",
   };
 
-  const handleDelete = onDeleteOption ?? (() => {});
+  const handleRemoveOption = onRemoveOption ?? (() => {});
 
   return (
     <li ref={setNodeRef} style={listItem} className={`listItem ${isDragging ? 'item--dragging' : ''} list-inside p-8 border-2 border-solid border-black-800`}>
@@ -45,7 +45,7 @@ export default function QuestionItem({ item, onAddOption, onRemoveQuestion, onDe
           item.type === "multiple-choice" && 
           (
             <>
-              <OptionList items={item.options ?? []} parentId={item.id} onDeleteOption={handleDelete} /> 
+              <OptionList items={item.options ?? []} parentId={item.id} onRemoveOption={handleRemoveOption} /> 
               <button onClick={() => onAddOption?.(item.id)} className="ml-4 p-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">+ Add option</button>
             </>
           )

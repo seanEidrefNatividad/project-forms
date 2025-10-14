@@ -38,28 +38,77 @@ const typeAwareClosestCenter: CollisionDetection = (args) => {
 import QuestionItem from "./QuestionItem";
 import OptionItem from "../options/OptionItem";
 
-import type { Option, Item, QuestionType } from "@/src/types" 
+import type { Option, Item, QuestionType, ActiveDrag } from "@/src/types" 
 
-type ActiveQuestion = { type: "question"; item: Item };
-type ActiveOption   = { type: "option"; item: Option; parentId: UniqueIdentifier };
-type ActiveDrag = ActiveQuestion | ActiveOption;
 
 export default function QuestionList({ initial }: { initial: Item[] }) {
   const [items, setItems] = useState<Item[]>(initial);
 
-  const add = (q: Item) => setItems((prev) => [...prev, q]);
-  const removeQuestion = (id: UniqueIdentifier) => setItems((prev) => [...prev.filter(item => item.id != id)]);
+  const uid = useCallback(
+    () => crypto?.randomUUID?.() ?? `id_${Date.now()}_${Math.random().toString(36).slice(2,8)}`,
+    []
+  );
 
-  const insertOption = (parentId: UniqueIdentifier, o: Option) => {
+  const addQuestion = useCallback((q: Item) => setItems(prev => [...prev, q]), []);
+
+  const addOption = useCallback((parentId: UniqueIdentifier, o: Option) => {
     setItems(prev =>
-      prev.map(q => (q.type === "multiple-choice" && q.id === parentId ? { ...q, options: [...q.options, o] } : q))
+      prev.map(q =>
+        q.type === "multiple-choice" && q.id === parentId
+          ? { ...q, options: [...q.options, o] }
+          : q
+      )
     );
-  };
-  const deleteOption = (parentId: UniqueIdentifier, optionId: UniqueIdentifier) => {
-    setItems(prev =>
-      prev.map(q => (q.type === "multiple-choice" && q.id === parentId ? { ...q, options: [...q.options.filter(o => o.id != optionId)] } : q))
-    );
-  };
+  }, []);
+
+  const handleAddQuestion = useCallback(
+    () => addQuestion({ id: uid(), title: "Untitled question", type: "short-text" }),
+    [addQuestion, uid]
+  );
+
+  const handleAddOption = useCallback(
+    (parentId: UniqueIdentifier) => addOption(parentId, { id: uid(), title: "Untitled option" }),
+    [addOption, uid]
+  );
+
+  const handleRemoveQuestion = useCallback(
+    (id: UniqueIdentifier) => setItems(prev => prev.filter(item => item.id !== id)),
+    []
+  );
+
+  const handleRemoveOption = useCallback(
+    (parentId: UniqueIdentifier, optionId: UniqueIdentifier) => {
+      setItems(prev =>
+        prev.map(q =>
+          q.type === "multiple-choice" && q.id === parentId
+            ? { ...q, options: q.options.filter(o => o.id !== optionId) }
+            : q
+        )
+      );
+    },
+    []
+  );
+
+  const handleChangeType = useCallback(
+    (id: UniqueIdentifier, type: QuestionType) => {
+      setItems(prev =>
+        prev.map(p => {
+          if (p.id !== id) return p;
+          if (type === "multiple-choice") {
+            return {
+              id: p.id,
+              title: p.title,
+              type,
+              options: [{ id: uid(), title: "Untitled option" }],
+            };
+          }
+          return { id: p.id, title: p.title, type };
+        })
+      );
+    },
+    [uid]
+  );
+
     
   const [activeItem, setActiveItem] = useState<ActiveDrag | null>(null);
 
@@ -90,31 +139,6 @@ export default function QuestionList({ initial }: { initial: Item[] }) {
     const opt = parent?.options?.find((o) => o.id === ACTIVE_ID);
     if (opt) setActiveItem({ type: "option", item: opt, parentId });
   }
-
-  const RAND_ID = Date.now();
-  const addQuestion = () => add({ id: `q_${RAND_ID}`, title:'Untitled question', type: "short-text"});
-  const addOption = (op:UniqueIdentifier) => insertOption(op, {id: `${RAND_ID}`, title:'Untitled option'});
-
-  const handleChangeType = useCallback((id: UniqueIdentifier, type: QuestionType) => {
-    setItems(prev => 
-      prev.map(p => {
-        if (p.id != id) return p
-        if (type === "multiple-choice") {
-          return {
-            id: p.id,
-            title: p.title,
-            type,
-            options: [{id: `${RAND_ID}`, title:'Untitled option'}]
-          }; 
-        } else {
-          return {
-            id: p.id,
-            title: p.title,
-            type,
-          };
-        }
-      }));
-  }, [RAND_ID]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -196,7 +220,7 @@ export default function QuestionList({ initial }: { initial: Item[] }) {
       <div className="w-full flex justify-end align-items-center p-2 absolute sticky top-0">
         < ThemeSwitcher />
       </div>
-      <button onClick={addQuestion} className="mb-4 ml-4 p-4 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
+      <button onClick={handleAddQuestion} className="mb-4 ml-4 p-4 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
         Add question
       </button>
       <DndContext
@@ -211,8 +235,8 @@ export default function QuestionList({ initial }: { initial: Item[] }) {
           <ol style={{ listStyleType: "decimal"}} className="flex gap-4 flex-col">
             {items.map((item) => (
               item.type === 'multiple-choice'
-              ? <QuestionItem key={item.id} item={item} onAddOption={addOption} onRemoveQuestion={removeQuestion} onDeleteOption={deleteOption} onChangeType={handleChangeType}/>
-              : <QuestionItem key={item.id} item={item} onRemoveQuestion={removeQuestion} onChangeType={handleChangeType}/>
+              ? <QuestionItem key={item.id} item={item} onAddOption={handleAddOption} onRemoveQuestion={handleRemoveQuestion} onRemoveOption={handleRemoveOption} onChangeType={handleChangeType}/>
+              : <QuestionItem key={item.id} item={item} onRemoveQuestion={handleRemoveQuestion} onChangeType={handleChangeType}/>
             ))}
           </ol>
         </SortableContext>
@@ -224,7 +248,7 @@ export default function QuestionList({ initial }: { initial: Item[] }) {
               <p className="text-xs opacity-70">{activeItem.item?.options?.length} options</p>
             </div>
           ) : activeItem?.type === "option" ? (
-            <OptionItem item={activeItem.item} parentId={activeItem.parentId} onDeleteOption={deleteOption}/>
+            <OptionItem item={activeItem.item} parentId={activeItem.parentId} onRemoveOption={handleRemoveOption}/>
           ) : null}
         </DragOverlay>
       </DndContext>

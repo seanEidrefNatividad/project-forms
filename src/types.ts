@@ -1,5 +1,9 @@
 import { type UniqueIdentifier} from "@dnd-kit/core"
 
+type ActiveQuestion = { type: "question"; item: Item };
+type ActiveOption   = { type: "option"; item: Option; parentId: UniqueIdentifier };
+export type ActiveDrag = ActiveQuestion | ActiveOption;
+
 export type QuestionType = "short-text" | "multiple-choice"
 export type Option = { id: UniqueIdentifier; title: string; };
 export type Item = 
@@ -10,18 +14,18 @@ export type QuestionItemProps = {
   item: Item; // ensure Item has at least { id: Id; ... }
   onAddOption?: (parentId: UniqueIdentifier) => void;
   onRemoveQuestion: (id: UniqueIdentifier) => void;
-  onDeleteOption?: (parentId: UniqueIdentifier, optionId: UniqueIdentifier) => void;
+  onRemoveOption?: (parentId: UniqueIdentifier, optionId: UniqueIdentifier) => void;
   onChangeType: (parentId: UniqueIdentifier, type: QuestionType) => void;
 };
 
 export type OptionListProps = {
   items: Option[],
   parentId: UniqueIdentifier,
-  onDeleteOption:(parentId:UniqueIdentifier, optionId:UniqueIdentifier)=>void
+  onRemoveOption:(parentId:UniqueIdentifier, optionId:UniqueIdentifier)=>void
 };
 
 export type OptionItemProps = {
   item: Option, 
   parentId: UniqueIdentifier, 
-  onDeleteOption:(parentId:UniqueIdentifier, optionId:UniqueIdentifier)=>void
+  onRemoveOption:(parentId:UniqueIdentifier, optionId:UniqueIdentifier)=>void
 };
