@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useCallback } from "react";
 import {
   DndContext,
   closestCenter,
@@ -38,7 +38,7 @@ const typeAwareClosestCenter: CollisionDetection = (args) => {
 import QuestionItem from "./QuestionItem";
 import OptionItem from "../options/OptionItem";
 
-import type { Option, Item } from "@/src/types" 
+import type { Option, Item, QuestionType } from "@/src/types" 
 
 type ActiveQuestion = { type: "question"; item: Item };
 type ActiveOption   = { type: "option"; item: Option; parentId: UniqueIdentifier };
@@ -93,8 +93,28 @@ export default function QuestionList({ initial }: { initial: Item[] }) {
 
   const RAND_ID = Date.now();
   const addQuestion = () => add({ id: `q_${RAND_ID}`, title:'Untitled question', type: "short-text"});
-  const addOption = (op:UniqueIdentifier) => insertOption(op, {id: `o_${RAND_ID}`, title:'Untitled option'});
+  const addOption = (op:UniqueIdentifier) => insertOption(op, {id: `${RAND_ID}`, title:'Untitled option'});
 
+  const handleChangeType = useCallback((id: UniqueIdentifier, type: QuestionType) => {
+    setItems(prev => 
+      prev.map(p => {
+        if (p.id != id) return p
+        if (type === "multiple-choice") {
+          return {
+            id: p.id,
+            title: p.title,
+            type,
+            options: [{id: `${RAND_ID}`, title:'Untitled option'}]
+          }; 
+        } else {
+          return {
+            id: p.id,
+            title: p.title,
+            type,
+          };
+        }
+      }));
+  }, [RAND_ID]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -191,8 +211,8 @@ export default function QuestionList({ initial }: { initial: Item[] }) {
           <ol style={{ listStyleType: "decimal"}} className="flex gap-4 flex-col">
             {items.map((item) => (
               item.type === 'multiple-choice'
-              ? <QuestionItem key={item.id} item={item} onAddOption={addOption} onRemoveQuestion={removeQuestion} onDeleteOption={deleteOption}/>
-              : <QuestionItem key={item.id} item={item} onRemoveQuestion={removeQuestion}/>
+              ? <QuestionItem key={item.id} item={item} onAddOption={addOption} onRemoveQuestion={removeQuestion} onDeleteOption={deleteOption} onChangeType={handleChangeType}/>
+              : <QuestionItem key={item.id} item={item} onRemoveQuestion={removeQuestion} onChangeType={handleChangeType}/>
             ))}
           </ol>
         </SortableContext>

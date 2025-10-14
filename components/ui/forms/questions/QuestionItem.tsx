@@ -6,9 +6,9 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import OptionList from "../options/OptionList";
 import Handle from "../handle";
-import type { QuestionItemProps } from "@/src/types.ts" 
+import type { QuestionItemProps, QuestionType } from "@/src/types.ts" 
 
-export default function QuestionItem({ item, onAddOption, onRemoveQuestion, onDeleteOption }: QuestionItemProps) {
+export default function QuestionItem({ item, onAddOption, onRemoveQuestion, onDeleteOption, onChangeType }: QuestionItemProps) {
   const {
     setNodeRef,
     setActivatorNodeRef, // attach this to the handle
@@ -32,10 +32,10 @@ export default function QuestionItem({ item, onAddOption, onRemoveQuestion, onDe
 
       <div className="w-[94%] inline-flex gap-1 mb-4">
         <input type="text" value={item.title + 'afsdfaefafef aef asef aesfeaf '} readOnly className="p-2 grow-2 w-[100%]"/>
-        <select name="type" id="" className="p-2 max-w-max">
+        <select name="type" id="" className="p-2 max-w-max" value={item.type} onChange={(e) => onChangeType(item.id, e.target.value as QuestionType)}>
           <option value="" disabled>Select type</option>
-          <option value="short text">text</option>
-          <option value="multiple choice">multiple choice</option>
+          <option value="short-text">text</option>
+          <option value="multiple-choice">multiple choice</option>
         </select>
       </div>
      
