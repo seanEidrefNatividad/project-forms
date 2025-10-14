@@ -5,13 +5,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import Handle from "../handle";
-import type { Option } from "@/src/types" 
-
-type OptionItemProps = {
-  item: Option, 
-  parentId: string, 
-  onDeleteOption:(parentId:string, optionId:string)=>void
-};
+import type { OptionItemProps } from "@/src/types" 
 
 export default function OptionItem({ item, parentId, onDeleteOption }: OptionItemProps) {
   const {

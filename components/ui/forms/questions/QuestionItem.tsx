@@ -6,14 +6,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import OptionList from "../options/OptionList";
 import Handle from "../handle";
-import type { Item } from "../../../../src/types.ts" 
-
-type QuestionItemProps = {
-  item: Item; // ensure Item has at least { id: Id; ... }
-  onAddOption?: (parentId: string) => void;
-  onRemoveQuestion: (id: string) => void;
-  onDeleteOption?: (parentId: string, optionId: string) => void;
-};
+import type { QuestionItemProps } from "@/src/types.ts" 
 
 export default function QuestionItem({ item, onAddOption, onRemoveQuestion, onDeleteOption }: QuestionItemProps) {
   const {

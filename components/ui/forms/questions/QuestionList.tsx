@@ -11,6 +11,7 @@ import {
   TouchSensor,
   DragOverlay,
   type CollisionDetection,
+  type UniqueIdentifier,
 } from "@dnd-kit/core";
 import {
   SortableContext,
@@ -40,21 +41,21 @@ import OptionItem from "../options/OptionItem";
 import type { Option, Item } from "@/src/types" 
 
 type ActiveQuestion = { type: "question"; item: Item };
-type ActiveOption   = { type: "option"; item: Option; parentId: string };
+type ActiveOption   = { type: "option"; item: Option; parentId: UniqueIdentifier };
 type ActiveDrag = ActiveQuestion | ActiveOption;
 
 export default function QuestionList({ initial }: { initial: Item[] }) {
   const [items, setItems] = useState<Item[]>(initial);
 
   const add = (q: Item) => setItems((prev) => [...prev, q]);
-  const removeQuestion = (id: string) => setItems((prev) => [...prev.filter(item => item.id != id)]);
+  const removeQuestion = (id: UniqueIdentifier) => setItems((prev) => [...prev.filter(item => item.id != id)]);
 
-  const insertOption = (parentId: string, o: Option) => {
+  const insertOption = (parentId: UniqueIdentifier, o: Option) => {
     setItems(prev =>
       prev.map(q => (q.type === "multiple-choice" && q.id === parentId ? { ...q, options: [...q.options, o] } : q))
     );
   };
-  const deleteOption = (parentId: string, optionId: string) => {
+  const deleteOption = (parentId: UniqueIdentifier, optionId: UniqueIdentifier) => {
     setItems(prev =>
       prev.map(q => (q.type === "multiple-choice" && q.id === parentId ? { ...q, options: [...q.options.filter(o => o.id != optionId)] } : q))
     );
@@ -69,7 +70,7 @@ export default function QuestionList({ initial }: { initial: Item[] }) {
 
     const data = active.data.current as
       | { type: "question"; }
-      | { type: "option"; parentId?: string }
+      | { type: "option"; parentId?: UniqueIdentifier }
       | undefined;
 
     if (!data?.type) {
@@ -92,7 +93,7 @@ export default function QuestionList({ initial }: { initial: Item[] }) {
 
   const RAND_ID = Date.now();
   const addQuestion = () => add({ id: `q_${RAND_ID}`, title:'Untitled question', type: "short-text"});
-  const addOption = (op:string) => insertOption(op, {id: `o_${RAND_ID}`, title:'Untitled option'});
+  const addOption = (op:UniqueIdentifier) => insertOption(op, {id: `o_${RAND_ID}`, title:'Untitled option'});
 
 
   const sensors = useSensors(
@@ -125,7 +126,7 @@ export default function QuestionList({ initial }: { initial: Item[] }) {
     setItems((prev) => arrayMove(prev, oldIndex, newIndex));
   };
 
-  const handleOptionDrag = (activeId: string, overId: string, parentId: string) => {
+  const handleOptionDrag = (activeId: string, overId: string, parentId: UniqueIdentifier) => {
     const parentIndex = itemLookup[parentId];
     const childIndexOld = itemLookup[activeId];
     const childIndexNew = itemLookup[overId];

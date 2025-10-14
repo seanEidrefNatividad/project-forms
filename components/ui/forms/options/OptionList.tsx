@@ -5,16 +5,10 @@ import {
 } from "react";
 import {
   SortableContext,
-  verticalListSortingStrategy,
+  verticalListSortingStrategy
 } from "@dnd-kit/sortable";
 import OptionItem from "./OptionItem";
-import type { Option } from "@/src/types" 
-
-type OptionListProps = {
-  items: Option[],
-  parentId: string,
-  onDeleteOption:(parentId:string, optionId:string)=>void
-};
+import type { OptionListProps } from "@/src/types" 
 
 export default function OptionList({ items, parentId, onDeleteOption }: OptionListProps) {
   const ids = useMemo(() => items.map((i) => i.id), [items]);
