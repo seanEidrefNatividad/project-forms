@@ -10,7 +10,7 @@ import Handle from "../handle";
 import type { QuestionItemProps, QuestionType } from "@/src/types.ts" 
 import { UniqueIdentifier } from "@dnd-kit/core";
 
-export default function QuestionItem({ item, onAddOption, onRemoveQuestion, onRemoveOption, onChangeType, onChangeQuestionTitle }: QuestionItemProps) {
+export default function QuestionItem({ item, onAddOption, onRemoveQuestion, onRemoveOption, onChangeType, onChangeQuestionTitle, onChangeOptionTitle}: QuestionItemProps) {
   const {
     setNodeRef,
     setActivatorNodeRef, // attach this to the handle
@@ -65,7 +65,7 @@ export default function QuestionItem({ item, onAddOption, onRemoveQuestion, onRe
           item.type === "multiple-choice" && 
           (
             <>
-              <OptionList items={item.options ?? []} parentId={item.id} onRemoveOption={handleRemoveOption} /> 
+              <OptionList items={item.options ?? []} parentId={item.id} onRemoveOption={handleRemoveOption} onChangeOptionTitle={onChangeOptionTitle}/> 
               <button onClick={() => onAddOption?.(item.id)} className="ml-4 p-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">+ Add option</button>
             </>
           )

@@ -36,7 +36,6 @@ const typeAwareClosestCenter: CollisionDetection = (args) => {
 };
 
 import QuestionItem from "./QuestionItem";
-import OptionItem from "../options/OptionItem";
 
 import type { Option, Item, QuestionType, ActiveDrag } from "@/src/types" 
 
@@ -54,6 +53,16 @@ export default function QuestionList({ initial }: { initial: Item[] }) {
       prev.map(q =>
         q.id === parentId
           ? { ...q, title} 
+          : q
+      )
+    )
+  },[]);
+
+  const handleChangeOptionTitle = useCallback((parentId: UniqueIdentifier, optionId: UniqueIdentifier, title: string) => {
+    setItems(prev =>
+      prev.map(q =>
+        q.id === parentId && q.options
+          ? { ...q, options: q.options.map(o => o.id === optionId ? {...o, title} : o)} 
           : q
       )
     )
@@ -251,11 +260,13 @@ export default function QuestionList({ initial }: { initial: Item[] }) {
               onRemoveQuestion={handleRemoveQuestion} 
               onRemoveOption={handleRemoveOption} 
               onChangeType={handleChangeType}
-              onChangeQuestionTitle={handleChangeQuestionTitle}/>
+              onChangeQuestionTitle={handleChangeQuestionTitle}
+              onChangeOptionTitle={handleChangeOptionTitle}/>
               : <QuestionItem key={item.id} item={item} 
               onRemoveQuestion={handleRemoveQuestion} 
               onChangeType={handleChangeType}
-              onChangeQuestionTitle={handleChangeQuestionTitle}/>
+              onChangeQuestionTitle={handleChangeQuestionTitle}
+              onChangeOptionTitle={handleChangeOptionTitle}/>
             ))}
           </ol>
         </SortableContext>
@@ -267,7 +278,10 @@ export default function QuestionList({ initial }: { initial: Item[] }) {
               <p className="text-xs opacity-70">{activeItem.item?.options?.length} options</p>
             </div>
           ) : activeItem?.type === "option" ? (
-            <OptionItem item={activeItem.item} parentId={activeItem.parentId} onRemoveOption={handleRemoveOption}/>
+            // <OptionItem item={activeItem.item} parentId={activeItem.parentId} onRemoveOption={handleRemoveOption}/>
+             <div className="drag-overlay rounded-xl border p-3 shadow-2xl opacity-100 scale-100">
+              <h4 className="font-medium mb-1">{activeItem.item.title}</h4>
+            </div>
           ) : null}
         </DragOverlay>
       </DndContext>

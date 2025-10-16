@@ -10,13 +10,13 @@ import {
 import OptionItem from "./OptionItem";
 import type { OptionListProps } from "@/src/types" 
 
-export default function OptionList({ items, parentId, onRemoveOption }: OptionListProps) {
+export default function OptionList({ items, parentId, onRemoveOption, onChangeOptionTitle }: OptionListProps) {
   const ids = useMemo(() => items.map((i) => i.id), [items]);
   return (
     <SortableContext items={ids} strategy={verticalListSortingStrategy}>
       <ul style={{ listStyleType: "none"}}>
         {items.map((item) => (
-          <OptionItem key={item.id} item={item} parentId={parentId} onRemoveOption={onRemoveOption}/>
+          <OptionItem key={item.id} item={item} parentId={parentId} onRemoveOption={onRemoveOption} onChangeOptionTitle={onChangeOptionTitle}/>
         ))}
       </ul>
     </SortableContext>

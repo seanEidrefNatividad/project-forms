@@ -17,16 +17,19 @@ export type QuestionItemProps = {
   onRemoveOption?: (parentId: UniqueIdentifier, optionId: UniqueIdentifier) => void;
   onChangeType: (parentId: UniqueIdentifier, type: QuestionType) => void;
   onChangeQuestionTitle: (parentId: UniqueIdentifier, title: string) => void;
+  onChangeOptionTitle: (parentId: UniqueIdentifier, optionId: UniqueIdentifier, title: string) => void;
 };
 
 export type OptionListProps = {
   items: Option[],
   parentId: UniqueIdentifier,
   onRemoveOption:(parentId:UniqueIdentifier, optionId:UniqueIdentifier)=>void
+  onChangeOptionTitle: (parentId: UniqueIdentifier, optionId: UniqueIdentifier, title: string) => void;
 };
 
 export type OptionItemProps = {
   item: Option, 
   parentId: UniqueIdentifier, 
   onRemoveOption:(parentId:UniqueIdentifier, optionId:UniqueIdentifier)=>void
+  onChangeOptionTitle: (parentId: UniqueIdentifier, optionId: UniqueIdentifier, title: string) => void;
 };
