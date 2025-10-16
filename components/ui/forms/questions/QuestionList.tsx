@@ -49,6 +49,16 @@ export default function QuestionList({ initial }: { initial: Item[] }) {
     []
   );
 
+  const handleChangeQuestionTitle = useCallback((parentId: UniqueIdentifier, title: string) => {
+    setItems(prev =>
+      prev.map(q =>
+        q.id === parentId
+          ? { ...q, title} 
+          : q
+      )
+    )
+  },[]);
+
   const addQuestion = useCallback((q: Item) => setItems(prev => [...prev, q]), []);
 
   const addOption = useCallback((parentId: UniqueIdentifier, o: Option) => {
@@ -220,6 +230,7 @@ export default function QuestionList({ initial }: { initial: Item[] }) {
       <div className="w-full flex justify-end align-items-center p-2 absolute sticky top-0">
         < ThemeSwitcher />
       </div>
+      <button onClick={() => console.log(items)}>show items</button>
       <button onClick={handleAddQuestion} className="mb-4 ml-4 p-4 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
         Add question
       </button>
@@ -235,8 +246,16 @@ export default function QuestionList({ initial }: { initial: Item[] }) {
           <ol style={{ listStyleType: "decimal"}} className="flex gap-4 flex-col">
             {items.map((item) => (
               item.type === 'multiple-choice'
-              ? <QuestionItem key={item.id} item={item} onAddOption={handleAddOption} onRemoveQuestion={handleRemoveQuestion} onRemoveOption={handleRemoveOption} onChangeType={handleChangeType}/>
-              : <QuestionItem key={item.id} item={item} onRemoveQuestion={handleRemoveQuestion} onChangeType={handleChangeType}/>
+              ? <QuestionItem key={item.id} item={item} 
+              onAddOption={handleAddOption} 
+              onRemoveQuestion={handleRemoveQuestion} 
+              onRemoveOption={handleRemoveOption} 
+              onChangeType={handleChangeType}
+              onChangeQuestionTitle={handleChangeQuestionTitle}/>
+              : <QuestionItem key={item.id} item={item} 
+              onRemoveQuestion={handleRemoveQuestion} 
+              onChangeType={handleChangeType}
+              onChangeQuestionTitle={handleChangeQuestionTitle}/>
             ))}
           </ol>
         </SortableContext>

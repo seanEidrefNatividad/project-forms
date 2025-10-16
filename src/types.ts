@@ -16,6 +16,7 @@ export type QuestionItemProps = {
   onRemoveQuestion: (id: UniqueIdentifier) => void;
   onRemoveOption?: (parentId: UniqueIdentifier, optionId: UniqueIdentifier) => void;
   onChangeType: (parentId: UniqueIdentifier, type: QuestionType) => void;
+  onChangeQuestionTitle: (parentId: UniqueIdentifier, title: string) => void;
 };
 
 export type OptionListProps = {

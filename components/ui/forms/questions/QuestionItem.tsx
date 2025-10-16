@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect, useRef } from "react";
 import {
   useSortable,
 } from "@dnd-kit/sortable";
@@ -7,8 +8,9 @@ import { CSS } from "@dnd-kit/utilities";
 import OptionList from "../options/OptionList";
 import Handle from "../handle";
 import type { QuestionItemProps, QuestionType } from "@/src/types.ts" 
+import { UniqueIdentifier } from "@dnd-kit/core";
 
-export default function QuestionItem({ item, onAddOption, onRemoveQuestion, onRemoveOption, onChangeType }: QuestionItemProps) {
+export default function QuestionItem({ item, onAddOption, onRemoveQuestion, onRemoveOption, onChangeType, onChangeQuestionTitle }: QuestionItemProps) {
   const {
     setNodeRef,
     setActivatorNodeRef, // attach this to the handle
@@ -27,11 +29,29 @@ export default function QuestionItem({ item, onAddOption, onRemoveQuestion, onRe
 
   const handleRemoveOption = onRemoveOption ?? (() => {});
 
+  const [draft, setDraft] = useState(item.title);
+  useEffect(() => setDraft(item.title), [item.title]);
+
+  // keep handler stable for the debounce effect
+  const onChangeTitleRef = useRef<(parentId: UniqueIdentifier, title: string) => void>(onChangeQuestionTitle);
+  useEffect(() => { onChangeTitleRef.current = onChangeQuestionTitle; }, [onChangeQuestionTitle]);
+
+  // optional: skip initial run
+  const first = useRef(true);
+  const DELAY = 1500;
+  useEffect(() => {
+    if (first.current) { first.current = false; return; }
+    if (draft === item.title) return; // no-op
+
+    const id = setTimeout(() => onChangeTitleRef.current(item.id, draft), DELAY);
+    return () => clearTimeout(id);
+  }, [draft, item.id, item.title]);
+
   return (
     <li ref={setNodeRef} style={listItem} className={`listItem ${isDragging ? 'item--dragging' : ''} list-inside p-8 border-2 border-solid border-black-800`}>
 
       <div className="w-[94%] inline-flex gap-1 mb-4">
-        <input type="text" value={item.title + 'afsdfaefafef aef asef aesfeaf '} readOnly className="p-2 grow-2 w-[100%]"/>
+        <input type="text" value={draft} onInput={(e) => setDraft(e.currentTarget.value)} className="p-2 grow-2 w-[100%]"/>
         <select name="type" id="" className="p-2 max-w-max" value={item.type} onChange={(e) => onChangeType(item.id, e.target.value as QuestionType)}>
           <option value="" disabled>Select type</option>
           <option value="short-text">text</option>
