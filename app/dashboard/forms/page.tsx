@@ -1,6 +1,7 @@
 import NoSSRQuestionList from "@/components/ui/forms/forms";
 import type { Item } from "@/src/types.ts" 
 
+
 export default async function Page() {
   const formData = {
     questions: [
@@ -12,8 +13,7 @@ export default async function Page() {
   };
 
   return (
-    <div className="container mx-auto max-w-screen-md md:p-6">
-      <h1 className="p-2">Sortable with Handle</h1>
+    <div className="mx-auto max-w-screen-md">
       <NoSSRQuestionList initial={formData.questions} />
     </div>
   );
