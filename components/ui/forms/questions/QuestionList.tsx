@@ -21,7 +21,6 @@ import {
 } from "@dnd-kit/sortable";
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
-import { ThemeSwitcher } from "@/components/theme-switcher";
 
 const typeAwareClosestCenter: CollisionDetection = (args) => {
   const { active, droppableContainers } = args;
@@ -236,9 +235,6 @@ export default function QuestionList({ initial }: { initial: Item[] }) {
 
   return (
     <>
-      <div className="w-full flex justify-end align-items-center p-2 absolute sticky top-0">
-        < ThemeSwitcher />
-      </div>
       <button onClick={() => console.log(items)}>show items</button>
       <button onClick={handleAddQuestion} className="mb-4 ml-4 p-4 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
         Add question
