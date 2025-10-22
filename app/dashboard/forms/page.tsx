@@ -12,6 +12,8 @@ export default async function Page() {
     ] as Item[],
   };
 
+  await new Promise((resolve) => setTimeout(resolve, 3000));
+
   return (
     <div className="mx-auto max-w-screen-md">
       <NoSSRQuestionList initial={formData.questions} />
