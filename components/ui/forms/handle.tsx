@@ -4,6 +4,7 @@ import React from "react";
 import {
   useSortable,
 } from "@dnd-kit/sortable";
+import clsx from 'clsx';
 
 // Derive the exact types from your installed dnd-kit
 type SortableReturn = ReturnType<typeof useSortable>;
@@ -25,12 +26,12 @@ export default function Handle({
   type,
 }: HandleProps) {
   const handle = type === 'option' ? '⋮⋮' : '☰';
-  const topMiddle: React.CSSProperties = type === 'question' ? {
-    position: 'absolute',
-    top: '0',
-    left: '50%',
-    transform: 'translateX(-50%)',
-  } : {};
+  const handleClass = clsx(
+    'cursor-grab touch-none',{
+      'text-[16px] absolute top-0 left-1/2 -translate-x-1/2': (type === 'question'),
+      'text-[20px] mr-2': type !== 'question'
+    }
+  )
   return (
     <button
       ref={setActivatorNodeRef}
@@ -38,13 +39,7 @@ export default function Handle({
       {...listeners}
       aria-label="Drag to reorder"
       title="Drag to reorder"
-      style={{
-        cursor: "grab",
-        touchAction: "none",
-        fontSize: 20,
-        ...topMiddle
-      }}
-      className="pr-2"
+      className={handleClass}
     >
       {handle}
     </button>

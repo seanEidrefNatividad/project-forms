@@ -14,7 +14,7 @@ export default function OptionList({ items, parentId, onRemoveOption, onChangeOp
   const ids = useMemo(() => items.map((i) => i.id), [items]);
   return (
     <SortableContext items={ids} strategy={verticalListSortingStrategy}>
-      <ul style={{ listStyleType: "none"}}>
+      <ul className="list-none gap-2 flex flex-col pb-3">
         {items.map((item) => (
           <OptionItem key={item.id} item={item} parentId={parentId} onRemoveOption={onRemoveOption} onChangeOptionTitle={onChangeOptionTitle}/>
         ))}

@@ -6,14 +6,11 @@
   gap: 12; */
 }
 
-.listItem {
-  /* padding: 10px 12px; */
+/* .listItem {
   margin-bottom: 8;
-  /* border: "1px solid #e5e7eb"; */
-  /* border: "3px solid #e5e7eb"; */
   border-radius: 5;
   background: "white";
-}
+} */
 
 /* make dragged item float above siblings; shadow purely visual */
 .item--dragging {

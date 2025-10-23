@@ -48,10 +48,10 @@ export default function OptionItem({ item, parentId, onRemoveOption, onChangeOpt
   }, [draft, parentId, item.id, item.title])
 
   return (
-    <li ref={setNodeRef} style={listItem} className={`listItem ${isDragging ? 'item--dragging' : ''}`}>
-      <div className="flex p-1">
+    <li ref={setNodeRef} style={listItem} className={`${isDragging ? 'item--dragging' : ''}`}>
+      <div className="flex">
         <Handle setActivatorNodeRef={setActivatorNodeRef} attributes={attributes} listeners={listeners} type={'option'}/>
-        <input style={{ flex: 1 }} type="text" name="" id="" value={draft} onInput={(e)=>setDraft(e.currentTarget.value)}/>
+        <input className="px-2 rounded-xl bg-input flex-1 py-[5px]" type="text" name="" id="" value={draft} onInput={(e)=>setDraft(e.currentTarget.value)}/>
         <button className="pl-3" onClick={() => onRemoveOption(parentId,item.id)}>X</button>
       </div>
     </li>

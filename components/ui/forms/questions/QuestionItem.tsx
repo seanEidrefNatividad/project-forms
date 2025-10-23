@@ -48,11 +48,11 @@ export default function QuestionItem({ item, onAddOption, onRemoveQuestion, onRe
   }, [draft, item.id, item.title]);
 
   return (
-    <li ref={setNodeRef} style={listItem} className={`listItem ${isDragging ? 'item--dragging' : ''} list-inside p-8 border-2 border-solid border-black-800`}>
+      <li ref={setNodeRef} style={listItem} className={`${isDragging ? 'item--dragging' : ''} list-inside p-8 rounded-xl bg-card`}>
 
       <div className="w-[94%] inline-flex gap-1 mb-4">
-        <input type="text" value={draft} onInput={(e) => setDraft(e.currentTarget.value)} className="p-2 grow-2 w-[100%]"/>
-        <select name="type" id="" className="p-2 max-w-max" value={item.type} onChange={(e) => onChangeType(item.id, e.target.value as QuestionType)}>
+        <input type="text" value={draft} onInput={(e) => setDraft(e.currentTarget.value)} className="p-2 grow-2 w-[100%] rounded-xl bg-input"/>
+        <select name="type" id="" className="p-2 max-w-max rounded-xl bg-input" value={item.type} onChange={(e) => onChangeType(item.id, e.target.value as QuestionType)}>
           <option value="" disabled>Select type</option>
           <option value="short-text">text</option>
           <option value="multiple-choice">multiple choice</option>
