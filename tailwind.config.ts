@@ -9,6 +9,13 @@ export default {
     "./src/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
+    keyframes: {
+      shimmer: {
+        '100%': {
+          transform: 'translateX(100%)',
+        },
+      },
+    },
     extend: {
       colors: {
         background: "hsl(var(--background))",
