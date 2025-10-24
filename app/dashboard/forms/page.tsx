@@ -1,6 +1,6 @@
 import NoSSRQuestionList from "@/components/ui/forms/forms";
 import type { Item } from "@/src/types.ts" 
-
+export const revalidate = 0;
 
 export default async function Page() {
   const formData = {
