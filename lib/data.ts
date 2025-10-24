@@ -1,10 +1,10 @@
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@/lib/supabase/server";
 
 export async function fetchFilteredForms(
   query: string,
   currentPage: number
 ) {
-    const supabase = createClient()
+    const supabase = await createClient()
     console.log(query,currentPage)
     try {
       // setIsLoading(true);
