@@ -2,7 +2,10 @@ import NoSSRQuestionList from "@/components/ui/forms/forms";
 import type { Item } from "@/src/types.ts" 
 export const revalidate = 0;
 
-export default async function Page() {
+export default async function Page(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+  console.log(params)
+  // const id = params.id;
   const formData = {
     questions: [
       { id: "q1", title: "Question 1", type:"short-text"},
@@ -12,7 +15,7 @@ export default async function Page() {
     ] as Item[],
   };
 
-  await new Promise((resolve) => setTimeout(resolve, 3000));
+  // await new Promise((resolve) => setTimeout(resolve, 3000));
 
   return (
     <div className="mx-auto max-w-screen-md">

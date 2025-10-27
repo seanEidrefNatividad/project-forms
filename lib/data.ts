@@ -9,7 +9,7 @@ export async function fetchFilteredForms(
     try {
       // setIsLoading(true);
 
-      await new Promise((resolve)=>{setTimeout(resolve,3000)})
+      // await new Promise((resolve)=>{setTimeout(resolve,3000)})
       
       const { data, error } = await supabase
         .from('forms')
