@@ -21,6 +21,7 @@ import {
 } from "@dnd-kit/sortable";
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
+import {save} from "@/lib/actions"
 
 const typeAwareClosestCenter: CollisionDetection = (args) => {
   const { active, droppableContainers } = args;
@@ -36,14 +37,15 @@ const typeAwareClosestCenter: CollisionDetection = (args) => {
 
 import QuestionItem from "./QuestionItem";
 
-import type { Option, Item, Form, QuestionType, ActiveDrag } from "@/src/types" 
+import type { Option, Item, Form, QuestionType, ActiveDrag, SaveForm, FormAction } from "@/src/types" 
 
 
 export default function QuestionList({ initial }: { initial: Form }) {
   const [items, setItems] = useState<Item[]>(initial.questions || []);
+  const [formId] = useState(() => initial.id);
 
   const uid = useCallback(
-    () => crypto?.randomUUID?.() ?? `id_${Date.now()}_${Math.random().toString(36).slice(2,8)}`,
+    () => crypto?.randomUUID?.(),
     []
   );
 
@@ -79,10 +81,36 @@ export default function QuestionList({ initial }: { initial: Form }) {
     );
   }, []);
 
-  const handleAddQuestion = useCallback(
-    () => addQuestion({ id: uid(), title: "Untitled question", type: "short-text" }),
-    [addQuestion, uid]
-  );
+  const handleAddQuestion = () => {
+    const newQuestion: Item = { id: uid(), title: "Untitled question", type: "short-text" };
+    addQuestion(newQuestion) // UI
+    const data: FormAction = {
+      op: 'addQuestion',
+      data: newQuestion
+    }
+    localSave(data) // local storage
+  }
+  
+  const localSave = (data: FormAction) => {
+    const local = localStorage.getItem('forms') ?? '';
+    const currentSaved = local ? JSON.parse(local) : [];
+    localStorage.setItem('forms', JSON.stringify([...currentSaved, data]));
+  }
+
+  const handleSave = () => {
+    const localData = coalesce();
+    const saving: SaveForm = {
+      formId: formId,
+      data: localData
+    }
+    save(saving)
+  }
+
+  const coalesce = () => {
+    const data = JSON.parse(localStorage.getItem('forms') ?? '');
+    localStorage.removeItem('forms');
+    return data;
+  }
 
   const handleAddOption = useCallback(
     (parentId: UniqueIdentifier) => addOption(parentId, { id: uid(), title: "Untitled option" }),
@@ -236,6 +264,9 @@ export default function QuestionList({ initial }: { initial: Form }) {
   return (
     <>
       <button onClick={() => console.log(items)}>show items</button>
+      <button onClick={handleSave} className="mb-4 ml-4 p-4 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
+        Save
+      </button>
       <button onClick={handleAddQuestion} className="mb-4 ml-4 p-4 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
         Add question
       </button>

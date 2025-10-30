@@ -34,3 +34,20 @@ export type OptionItemProps = {
   onRemoveOption:(parentId:UniqueIdentifier, optionId:UniqueIdentifier)=>void
   onChangeOptionTitle: (parentId: UniqueIdentifier, optionId: UniqueIdentifier, title: string) => void;
 };
+
+export type SaveForm = {
+  formId: UniqueIdentifier;
+  data: FormAction[];
+}
+
+export type FormAction = {
+  op: 'addQuestion';
+  data: Item;
+}
+
+export type AddQuestionSchema = {
+  id: UniqueIdentifier;
+  title: string;
+  type: string;
+  form_id: UniqueIdentifier;
+}
