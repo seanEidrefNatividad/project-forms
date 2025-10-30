@@ -26,35 +26,35 @@ export default async function Page(props: { params: { id: string }}) {
       <NoSSRQuestionList initial={formData} />
     </div>
   );
-}
 
-async function getFormData(id: string): Promise<Form> {
-  const supabase = await createClient();
+  async function getFormData(id: string): Promise<Form> {
+    const supabase = await createClient();
 
-  const { data, error } = await supabase
-    .from('forms')
-    .select(`
-      id, title, description,
-      questions:questions (
-        id, title, type
-      )
-    `)
-    .eq('id', id)
-    .maybeSingle();
+    const { data, error } = await supabase
+      .from('forms')
+      .select(`
+        id, title, description,
+        questions:questions (
+          id, title, type
+        )
+      `)
+      .eq('id', id)
+      .maybeSingle();
 
-  if (error) throw error;
-  if (!data) notFound();
+    if (error) throw error;
+    if (!data) notFound();
 
-  return  {
-    id: data.id,
-    title: data.title,
-    description: data.description,
-    questions: (data.questions || []).map((q) => {
-      return {
-        id: q.id,
-        title: q.title,
-        type: q.type,
-      }
-    })
+    return  {
+      id: data.id,
+      title: data.title,
+      description: data.description,
+      questions: (data.questions || []).map((q) => {
+        return {
+          id: q.id,
+          title: q.title,
+          type: q.type,
+        }
+      })
+    }
   }
 }
