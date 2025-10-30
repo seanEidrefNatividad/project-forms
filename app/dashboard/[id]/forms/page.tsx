@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 export const revalidate = 0;
 
 export default async function Page(props: { params: { id: string }}) {
-  const params = await props.params;
+  const params = props.params;
   let formData: Form =  {id:'', title: '', description: '', questions: []};
 
   const supabase = await createClient();
