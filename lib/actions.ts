@@ -42,3 +42,19 @@ async function saveQuestion(newQuestion: Item, formId:UniqueIdentifier) {
     console.log(error instanceof Error ? error.message : "An error occurred");
   }
 }
+
+const uid = () => crypto?.randomUUID?.();
+
+export async function createForm() {
+  const supabase = await createClient();
+  const id = uid();
+
+  const { error } = await supabase
+    .from('forms')
+    .insert([{ id }])
+
+  if (error) throw error;
+
+  revalidatePath('/dashboard');
+  redirect(`/dashboard/${id}/forms`);
+}

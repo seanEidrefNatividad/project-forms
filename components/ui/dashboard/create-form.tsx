@@ -1,35 +1,13 @@
 'use client'
 import { useState } from 'react'
-import { createClient } from "@/lib/supabase/client";
-import {useRouter} from 'next/navigation'
+import {createForm} from '@/lib/actions'
 
 export default function CreateForm() {
   const [isLoading, setIsLoading] = useState(false);
-  const supabase = createClient()
-  const router = useRouter()
 
   async function handleClick() {
-    try {
-      setIsLoading(true);
-      const { data, error } = await supabase
-        .from('forms')
-        .insert({ title: 'Untitled' })
-        .select()
-        .limit(1)
-
-      if (error) throw error;
-
-      const {id} = data[0]
-      if (id) {
-        router.refresh()
-        router.push(`/dashboard/${id}/forms`)
-      }
-
-    } catch (error: unknown) {
-      alert(error instanceof Error ? error.message : "An error occurred");
-    } finally {
-      setIsLoading(false);
-    }
+    setIsLoading(true);
+    createForm()
   }
 
   return (
