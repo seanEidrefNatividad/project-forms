@@ -7,7 +7,36 @@ export const revalidate = 0;
 
 export default async function Page(props: { params: { id: string }}) {
   const params = await props.params;
-  const formData: Form = await getFormData(params.id);
+  let formData: Form =  {id:'', title: '', description: '', questions: []};
+
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from('forms')
+    .select(`
+      id, title, description,
+      questions:questions (
+        id, title, type
+      )
+    `)
+    .eq('id', params.id)
+    .maybeSingle();
+
+  if (error) throw error;
+  if (!data) notFound();
+
+  formData = {
+    id: data.id,
+    title: data.title,
+    description: data.description,
+    questions: (data.questions || []).map((q) => {
+      return {
+        id: q.id,
+        title: q.title,
+        type: q.type,
+      }
+    })
+  }
 
   // const id = params.id;
   // const formData = {
@@ -26,35 +55,4 @@ export default async function Page(props: { params: { id: string }}) {
       <NoSSRQuestionList initial={formData} />
     </div>
   );
-
-  async function getFormData(id: string): Promise<Form> {
-    const supabase = await createClient();
-
-    const { data, error } = await supabase
-      .from('forms')
-      .select(`
-        id, title, description,
-        questions:questions (
-          id, title, type
-        )
-      `)
-      .eq('id', id)
-      .maybeSingle();
-
-    if (error) throw error;
-    if (!data) notFound();
-
-    return  {
-      id: data.id,
-      title: data.title,
-      description: data.description,
-      questions: (data.questions || []).map((q) => {
-        return {
-          id: q.id,
-          title: q.title,
-          type: q.type,
-        }
-      })
-    }
-  }
 }
