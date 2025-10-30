@@ -4,6 +4,7 @@ type ActiveQuestion = { type: "question"; item: Item };
 type ActiveOption   = { type: "option"; item: Option; parentId: UniqueIdentifier };
 export type ActiveDrag = ActiveQuestion | ActiveOption;
 
+export type Form = { id: UniqueIdentifier; title: string; description: string; questions?: Item[]; };
 export type QuestionType = "short-text" | "multiple-choice"
 export type Option = { id: UniqueIdentifier; title: string; };
 export type Item = 

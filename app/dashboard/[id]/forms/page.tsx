@@ -1,45 +1,44 @@
 import NoSSRQuestionList from "@/components/ui/forms/forms";
 import type { Form } from "@/src/types.ts" 
 import { createClient } from "@/lib/supabase/server";
+import { notFound } from 'next/navigation';
 
 export const revalidate = 0;
 
-export default async function Page(props: { params: Promise<{ id: string }> }) {
+export async function getFormData(id: string): Promise<Form> {
   const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from('forms')
+    .select(`
+      id, title, description,
+      questions:questions (
+        id, title, type
+      )
+    `)
+    .eq('id', id)
+    .maybeSingle();
+
+  if (error) throw error;
+  if (!data) notFound();
+
+  return  {
+    id: data.id,
+    title: data.title,
+    description: data.description,
+    questions: (data.questions || []).map((q) => {
+      return {
+        id: q.id,
+        title: q.title,
+        type: q.type,
+      }
+    })
+  }
+}
+
+export default async function Page(props: { params: { id: string }}) {
   const params = await props.params;
-  let formData: Form = { id: '', title: '', description: '', questions: [] };
-
-  try {
-    const { data:form, error:formError } = await supabase
-      .from('forms')
-      .select('id, title, description')
-      .eq('id', params.id)
-      .single()
-
-    if (formError) throw formError;
-    if (!form) throw new Error('Form not found.');
-
-    const { data:questions, error:qError } = await supabase
-      .from('questions')
-      .select()
-      .eq('form_id', form.id)
-
-    if (qError) throw qError;
-
-    formData = {
-      ...form,
-      questions: (questions || []).map((q) => {
-        return {
-          id: q.id,
-          title: q.title,
-          type: q.type,
-          options: q.options || [],
-        }
-      })
-    }
-  } catch (error: unknown) {
-    alert(error instanceof Error ? error.message : "An error occurred");
-  } 
+  const formData: Form = await getFormData(params.id);
 
   // const id = params.id;
   // const formData = {
@@ -55,7 +54,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
 
   return (
     <div className="mx-auto max-w-screen-md">
-      <NoSSRQuestionList initial={formData.questions ?? []} />
+      <NoSSRQuestionList initial={formData} />
     </div>
   );
 }

@@ -36,11 +36,11 @@ const typeAwareClosestCenter: CollisionDetection = (args) => {
 
 import QuestionItem from "./QuestionItem";
 
-import type { Option, Item, QuestionType, ActiveDrag } from "@/src/types" 
+import type { Option, Item, Form, QuestionType, ActiveDrag } from "@/src/types" 
 
 
-export default function QuestionList({ initial }: { initial: Item[] }) {
-  const [items, setItems] = useState<Item[]>(initial);
+export default function QuestionList({ initial }: { initial: Form }) {
+  const [items, setItems] = useState<Item[]>(initial.questions || []);
 
   const uid = useCallback(
     () => crypto?.randomUUID?.() ?? `id_${Date.now()}_${Math.random().toString(36).slice(2,8)}`,
