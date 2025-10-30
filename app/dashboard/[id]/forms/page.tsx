@@ -1,7 +1,7 @@
 import NoSSRQuestionList from "@/components/ui/forms/forms";
 import type { Form } from "@/src/types.ts" 
 import { createClient } from "@/lib/supabase/server";
-import { notFound } from 'next/navigation';
+// import { notFound } from 'next/navigation';
 
 export const revalidate = 0;
 
@@ -11,32 +11,64 @@ export default async function Page(props: { params: { id: string }}) {
 
   const supabase = await createClient();
 
-  const { data, error } = await supabase
-    .from('forms')
-    .select(`
-      id, title, description,
-      questions:questions (
-        id, title, type
-      )
-    `)
-    .eq('id', params.id)
-    .maybeSingle();
+  try {
+    const { data:form, error:formError } = await supabase
+      .from('forms')
+      .select('id, title, description')
+      .eq('id', params.id)
+      .single()
 
-  if (error) throw error;
-  if (!data) notFound();
+    if (formError) throw formError;
+    if (!form) throw new Error('Form not found.');
 
-  formData = {
-    id: data.id,
-    title: data.title,
-    description: data.description,
-    questions: (data.questions || []).map((q) => {
-      return {
-        id: q.id,
-        title: q.title,
-        type: q.type,
-      }
-    })
-  }
+    const { data:questions, error:qError } = await supabase
+      .from('questions')
+      .select()
+      .eq('form_id', form.id)
+
+    if (qError) throw qError;
+
+    formData = {
+      ...form,
+      questions: (questions || []).map((q) => {
+        return {
+          id: q.id,
+          title: q.title,
+          type: q.type,
+          options: q.options || [],
+        }
+      })
+    }
+  } catch (error: unknown) {
+    alert(error instanceof Error ? error.message : "An error occurred");
+  } 
+
+  // const { data, error } = await supabase
+  //   .from('forms')
+  //   .select(`
+  //     id, title, description,
+  //     questions:questions (
+  //       id, title, type
+  //     )
+  //   `)
+  //   .eq('id', params.id)
+  //   .maybeSingle();
+
+  // if (error) throw error;
+  // if (!data) notFound();
+
+  // formData = {
+  //   id: data.id,
+  //   title: data.title,
+  //   description: data.description,
+  //   questions: (data.questions || []).map((q) => {
+  //     return {
+  //       id: q.id,
+  //       title: q.title,
+  //       type: q.type,
+  //     }
+  //   })
+  // }
 
   // const id = params.id;
   // const formData = {
