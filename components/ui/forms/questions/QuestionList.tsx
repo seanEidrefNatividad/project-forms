@@ -82,7 +82,8 @@ export default function QuestionList({ initial }: { initial: Form }) {
   }, []);
 
   const handleAddQuestion = () => {
-    const newQuestion: Item = { id: uid(), title: "Untitled question", type: "short-text" };
+    const id:UniqueIdentifier = uid();
+    const newQuestion: Item = { id, title: "Untitled question", type: "short-text" };
     addQuestion(newQuestion) // UI
     const data: FormAction = {
       op: 'addQuestion',

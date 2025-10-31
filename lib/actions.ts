@@ -19,7 +19,8 @@ export async function saveQuestions(formId: UniqueIdentifier, items: FormAction[
 
   if (error) {
     console.error('RPC failed:', error);
-    throw new Error('Could not save questions');
+    throw error
+    // throw new Error('Could not save questions');
   }
 }
 
