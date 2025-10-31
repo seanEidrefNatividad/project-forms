@@ -1,3 +1,5 @@
+export const runtime = 'nodejs';
+
 import NoSSRQuestionList from "@/components/ui/forms/forms";
 import type { Form } from "@/src/types.ts" 
 import { createClient } from "@/lib/supabase/server";
