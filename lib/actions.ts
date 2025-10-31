@@ -14,7 +14,7 @@ export async function saveQuestions(formId: UniqueIdentifier, items: FormAction[
 
   const { error } = await supabase.rpc('save_questions', {
     p_form_id: formId,
-    p_questions: items,
+    p_questions: JSON.parse(JSON.stringify(items))
   });
 
   if (error) {
