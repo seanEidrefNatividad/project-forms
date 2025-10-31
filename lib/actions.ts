@@ -4,7 +4,6 @@ import type { SaveForm, FormAction  } from "@/src/types"
 import { UniqueIdentifier } from "@dnd-kit/core";
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { AddQuestionSchema } from "@/src/types";
 
 export async function save(data:SaveForm) {
   saveQuestions(data.formId, data['data'])

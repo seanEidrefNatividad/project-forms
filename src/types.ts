@@ -44,10 +44,3 @@ export type FormAction = {
   op: 'addQuestion';
   data: Item;
 }
-
-export type AddQuestionSchema = {
-  id: UniqueIdentifier;
-  title: string;
-  type: string;
-  form_id: UniqueIdentifier;
-}
