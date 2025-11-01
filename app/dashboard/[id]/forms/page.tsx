@@ -1,4 +1,4 @@
-export const runtime = 'nodejs';
+// export const runtime = 'nodejs';
 
 import NoSSRQuestionList from "@/components/ui/forms/forms";
 import type { Form } from "@/src/types.ts" 
