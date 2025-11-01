@@ -106,7 +106,7 @@ export default function QuestionList({ initial }: { initial: Form }) {
       formId: formId,
       data: localData
     }
-    let data: Response = await save(saving)
+    const data: Response = await save(saving)
     if (data) {
       setIsSaving(false)
       alert(data.message)
