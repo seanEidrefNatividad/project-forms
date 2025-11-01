@@ -37,12 +37,13 @@ const typeAwareClosestCenter: CollisionDetection = (args) => {
 
 import QuestionItem from "./QuestionItem";
 
-import type { Option, Item, Form, QuestionType, ActiveDrag, SaveForm, FormAction } from "@/src/types" 
+import type { Option, Item, Form, QuestionType, ActiveDrag, SaveForm, FormAction, Response } from "@/src/types" 
 
 
 export default function QuestionList({ initial }: { initial: Form }) {
   const [items, setItems] = useState<Item[]>(initial.questions || []);
   const [formId] = useState(() => initial.id);
+  const [isSaving, setIsSaving] = useState(false);
 
   const uid = useCallback(
     () => crypto?.randomUUID?.(),
@@ -98,13 +99,18 @@ export default function QuestionList({ initial }: { initial: Form }) {
     localStorage.setItem('forms', JSON.stringify([...currentSaved, data]));
   }
 
-  const handleSave = () => {
+  async function handleSave () {
+    setIsSaving(true)
     const localData = coalesce();
     const saving: SaveForm = {
       formId: formId,
       data: localData
     }
-    save(saving)
+    let data: Response = await save(saving)
+    if (data) {
+      setIsSaving(false)
+      alert(data.message)
+    }
   }
 
   const coalesce = () => {
@@ -266,7 +272,7 @@ export default function QuestionList({ initial }: { initial: Form }) {
     <>
       <button onClick={() => console.log(items)}>show items</button>
       <button onClick={handleSave} className="mb-4 ml-4 p-4 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
-        Save
+        {isSaving ? 'Saving...' : 'Save'}
       </button>
       <button onClick={handleAddQuestion} className="mb-4 ml-4 p-4 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
         Add question

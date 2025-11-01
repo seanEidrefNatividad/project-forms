@@ -44,3 +44,7 @@ export type FormAction = {
   op: 'addQuestion';
   data: Item;
 }
+
+export type Response = {
+  message: 'success' | 'fail' 
+}

@@ -1,15 +1,15 @@
 'use server'
 import { createClient } from "@/lib/supabase/server";
-import type { SaveForm, FormAction  } from "@/src/types" 
+import type { SaveForm, FormAction, Response  } from "@/src/types" 
 import { UniqueIdentifier } from "@dnd-kit/core";
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
-export async function save(data:SaveForm) {
-  saveQuestions(data.formId, data['data'])
+export async function save(data:SaveForm): Promise<Response> {
+  return await saveQuestions(data.formId, data['data'])
 }
 
-async function saveQuestions(formId: UniqueIdentifier, items: FormAction[]) {
+async function saveQuestions(formId: UniqueIdentifier, items: FormAction[]): Promise<Response> {
   const supabase = await createClient();
   const questions = items.map(i=>{
     const {id, title, type} = i.data;
@@ -17,17 +17,12 @@ async function saveQuestions(formId: UniqueIdentifier, items: FormAction[]) {
       id, title, type, 'form_id': formId
     }
   })
-  //  console.log(questions)
-  try {
-    const { error } = await supabase
-      .from('questions')
-      .insert(questions)
+  const { error } = await supabase
+    .from('questions')
+    .insert(questions)
 
-    if (error) throw error;
-
-  } catch (error: unknown) {
-    console.log(error instanceof Error ? error.message : "An error occurred");
-  }
+  if (error) return {message:'fail'}
+  return {message:'success'}
 }
 
 
