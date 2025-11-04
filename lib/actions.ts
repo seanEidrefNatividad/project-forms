@@ -12,7 +12,7 @@ export async function save(data:SaveForm): Promise<Response> {
 // async function saveQuestions(formId: UniqueIdentifier, items: FormAction[]): Promise<Response> {
 //   const supabase = await createClient();
 //   const questions = items.map(i=>{
-//     const {id, title, type} = i.data;
+//     const {id, title, type} = i;
 //     return {
 //       id, title, type, 'form_id': formId
 //     }
@@ -33,7 +33,7 @@ export async function saveQuestions(formId: UniqueIdentifier, items: FormAction[
     p_questions: items
   });
 
-  if (error) return {message:'fail'}
+  if (error) return {message:'fail: ' + error.message}
   return {message:'success'}
 }
 

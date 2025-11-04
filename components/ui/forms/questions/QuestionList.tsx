@@ -22,6 +22,7 @@ import {
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
 import {save} from "@/lib/actions"
+import useNetworkStatus from '@/hooks/useNetworkStatus'; // Adjust path as needed
 
 const typeAwareClosestCenter: CollisionDetection = (args) => {
   const { active, droppableContainers } = args;
@@ -44,6 +45,7 @@ export default function QuestionList({ initial }: { initial: Form }) {
   const [items, setItems] = useState<Item[]>(initial.questions || []);
   const [formId] = useState(() => initial.id);
   const [isSaving, setIsSaving] = useState(false);
+  const isOnline = useNetworkStatus();
 
   const uid = useCallback(
     () => crypto?.randomUUID?.(),
@@ -87,36 +89,96 @@ export default function QuestionList({ initial }: { initial: Form }) {
     const newQuestion: Item = { id, title: "Untitled question", type: "short-text" };
     addQuestion(newQuestion) // UI
     const data: FormAction = {
-      op: 'addQuestion',
-      data: newQuestion
+      action: 'add',
+      ...newQuestion
     }
-    localSave(data) // local storage
+    localSaveRawFormActions(data) // local storage
   }
   
-  const localSave = (data: FormAction) => {
-    const local = localStorage.getItem('forms') ?? '';
+  const localSaveRawFormActions = (data: FormAction) => {
+    const local = localStorage.getItem('rawFormActions') ?? '';
     const currentSaved = local ? JSON.parse(local) : [];
-    localStorage.setItem('forms', JSON.stringify([...currentSaved, data]));
+    localStorage.setItem('rawFormActions', JSON.stringify([...currentSaved, data]));
+  }
+
+  const localSaveProcessedFormActions = (data: FormAction[]) => {
+    const local = localStorage.getItem('processedFormActions') ?? '';
+    const currentSaved = local ? JSON.parse(local) : [];
+    localStorage.setItem('processedFormActions', JSON.stringify([...currentSaved, data].flat()));
   }
 
   async function handleSave () {
     setIsSaving(true)
-    const localData = coalesce();
-    const saving: SaveForm = {
-      formId: formId,
-      data: localData
-    }
-    const data: Response = await save(saving)
-    if (data) {
+    const localData = processFormActions();
+    if (!localData || localData.length < 1) {
       setIsSaving(false)
-      alert(data.message)
+      alert('No changes to save')
+      return;
+    }
+
+    if (!isOnline) {
+      setIsSaving(false)
+      alert('You are offline. Changes saved locally and will be synced when back online.')
+      return;
+    } else {
+      const saving: SaveForm = {
+        formId: formId,
+        data: localData
+      }
+      const data: Response = await save(saving)
+      if (data) {
+        setIsSaving(false)
+        alert(data.message)
+      }
     }
   }
 
-  const coalesce = () => {
-    const data = JSON.parse(localStorage.getItem('forms') ?? '');
-    localStorage.removeItem('forms');
+  const getLocalSavedRawFormAction = (): FormAction[] | undefined  => {
+    const data = JSON.parse(localStorage.getItem('rawFormActions') ?? '[]');
+    localStorage.removeItem('rawFormActions');
     return data;
+  }
+
+  const getLocalSavedProcessedFormAction = (): FormAction[] | undefined  => {
+    const data = JSON.parse(localStorage.getItem('processedFormActions') ?? '[]');
+    localStorage.removeItem('processedFormActions');
+    return data;
+  }
+
+  const reduceFormAction = (data: FormAction[]): FormAction[] | undefined => {
+    const temp:FormAction[] = [];
+    data.forEach(d => {
+      switch(d.action) {
+        case 'add':
+          temp.push(d);
+      }
+    });
+    return temp;
+  }
+
+  const processFormActions = (): FormAction[] | undefined => {
+    const formActions: FormAction[] = [];
+
+    const localDraft: FormAction[] | undefined = getLocalSavedProcessedFormAction();
+    if (localDraft) {
+      formActions.push(...localDraft);
+    }
+  
+    const localData: FormAction[] | undefined = getLocalSavedRawFormAction();
+    if (localData) {
+      formActions.push(...localData);
+    }
+
+    const reduced = reduceFormAction(formActions)
+
+    if (!reduced) {
+      alert('No draft found to save locally.')
+      return;
+    }
+
+    localSaveProcessedFormActions(reduced)
+
+    return reduced;
   }
 
   const handleAddOption = useCallback(
@@ -270,6 +332,11 @@ export default function QuestionList({ initial }: { initial: Form }) {
 
   return (
     <>
+      {isOnline ? (
+        <p>You are online!</p>
+      ) : (
+        <p>You are currently offline. Please check your internet connection.</p>
+      )}
       <button onClick={() => console.log(items)}>show items</button>
       <button onClick={handleSave} className="mb-4 ml-4 p-4 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
         {isSaving ? 'Saving...' : 'Save'}
