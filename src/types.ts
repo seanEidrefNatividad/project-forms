@@ -42,20 +42,22 @@ export type SaveForm = {
 
 export type FormAction =
 | {
-    action: 'add';
+    action: 'add' | 'addUpdate'
     id: UniqueIdentifier;   
     title: string;
     type: QuestionType;  
   }
 | {
-    action: 'update';
+    action: 'update'
     id: UniqueIdentifier;
-    title: string;
-    type: QuestionType;  
+    title?: string;
+    type?: QuestionType;  
   }
 | {
     action: 'delete';
     id: UniqueIdentifier;
+    title?: never;
+    type?: never; 
   };
 
 

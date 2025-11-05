@@ -52,16 +52,6 @@ export default function QuestionList({ initial }: { initial: Form }) {
     []
   );
 
-  const handleChangeQuestionTitle = useCallback((parentId: UniqueIdentifier, title: string) => {
-    setItems(prev =>
-      prev.map(q =>
-        q.id === parentId
-          ? { ...q, title} 
-          : q
-      )
-    )
-  },[]);
-
   const handleChangeOptionTitle = useCallback((parentId: UniqueIdentifier, optionId: UniqueIdentifier, title: string) => {
     setItems(prev =>
       prev.map(q =>
@@ -100,8 +90,26 @@ export default function QuestionList({ initial }: { initial: Form }) {
     localStorage.setItem('rawFormActions', JSON.stringify([...currentSaved, data]));
   }, []);
 
-  const removeQuestion = useCallback((id: UniqueIdentifier) => setItems(prev => prev.filter(item => item.id !== id)),[]);
+  const changeQuestionTitle = useCallback((parentId: UniqueIdentifier, title: string) => {
+    setItems(prev =>
+      prev.map(q =>
+        q.id === parentId
+          ? { ...q, title} 
+          : q
+      )
+    )
+  },[]);
+  const handleChangeQuestionTitle = useCallback((parentId: UniqueIdentifier, title: string) => {
+    changeQuestionTitle(parentId, title) // UI
+    const data: FormAction = {
+      action: 'update',
+      id: parentId,
+      title,
+    }
+    localSaveRawFormActions(data) // local storage
+  },[changeQuestionTitle, localSaveRawFormActions]);
 
+  const removeQuestion = useCallback((id: UniqueIdentifier) => setItems(prev => prev.filter(item => item.id !== id)),[]);
   const handleRemoveQuestion = useCallback((id: UniqueIdentifier) => {
     removeQuestion(id) // UI
     const data: FormAction = {
@@ -158,25 +166,53 @@ export default function QuestionList({ initial }: { initial: Form }) {
     return data;
   }
 
+  const findFormActionIndex = (data: FormAction[], id: UniqueIdentifier): number => { 
+    return data.findIndex(d => d.id === id);
+  }
+
   const reduceFormAction = (data: FormAction[]): FormAction[] | undefined => {
     const temp:FormAction[] = [];
+    let index: number;
     data.forEach(d => {
       switch(d.action) {
         case 'add':
           temp.push(d);
           break;
         case 'delete':
-          const index = temp.findIndex(item => item.id === d.id);
+          index = findFormActionIndex(temp, d.id);
           if (index == -1) {
             temp.push(d);
           } else {
-            if (temp[index].action == 'add') { // if added and then deleted, remove both.
+            if (temp[index].action == 'add' || temp[index].action == 'addUpdate') { // remove, do not send to database
               temp.splice(index, 1);
               return;
             } 
             temp[index] = { // if already in the database, we must delete it by sending this.
               action: 'delete',
-              id: d.id
+              id: d.id,
+            }
+          }
+          break;
+        case 'update':
+          index = findFormActionIndex(temp, d.id);
+          if (index == -1) {
+            temp.push(d);
+          } else {
+           
+            if (temp[index].action == 'add') {
+              temp[index] = {
+                action: 'addUpdate',
+                id: d.id,
+                title: d.title ? d.title : 'Untitled question',
+                type: d.type ? d.type : 'short-text'
+              }
+              return;
+            }
+            temp[index] = {
+              action: 'update',
+              id: d.id,
+              title: d.title ? d.title : temp[index].title,
+              type: d.type ? d.type : temp[index].type,
             }
           }
           break;
