@@ -30,7 +30,7 @@ export async function saveQuestions(formId: UniqueIdentifier, items: FormAction[
 
   const { error } = await supabase.rpc('save_questions', {
     p_form_id: formId,
-    p_questions: items
+    p_actions: items
   });
 
   if (error) return {message:'fail: ' + error.message}
