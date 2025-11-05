@@ -23,6 +23,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
       )
     `)
     .eq('id', params.id)
+    .eq('questions.is_deleted', false)
     .maybeSingle();
 
   if (error) throw error;
