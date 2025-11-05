@@ -94,12 +94,25 @@ export default function QuestionList({ initial }: { initial: Form }) {
     }
     localSaveRawFormActions(data) // local storage
   }
-  
-  const localSaveRawFormActions = (data: FormAction) => {
+  const localSaveRawFormActions = useCallback((data: FormAction) => {
     const local = localStorage.getItem('rawFormActions') ?? '';
     const currentSaved = local ? JSON.parse(local) : [];
     localStorage.setItem('rawFormActions', JSON.stringify([...currentSaved, data]));
-  }
+  }, []);
+
+  const removeQuestion = useCallback((id: UniqueIdentifier) => setItems(prev => prev.filter(item => item.id !== id)),[]);
+
+  const handleRemoveQuestion = useCallback((id: UniqueIdentifier) => {
+    removeQuestion(id) // UI
+    const data: FormAction = {
+      action: 'delete',
+      id,
+    }
+    localSaveRawFormActions(data) // local storage
+    },[removeQuestion, localSaveRawFormActions]
+  );
+  
+
 
   const localSaveProcessedFormActions = (data: FormAction[]) => {
     const local = localStorage.getItem('processedFormActions') ?? '';
@@ -151,6 +164,22 @@ export default function QuestionList({ initial }: { initial: Form }) {
       switch(d.action) {
         case 'add':
           temp.push(d);
+          break;
+        case 'delete':
+          const index = temp.findIndex(item => item.id === d.id);
+          if (index == -1) {
+            temp.push(d);
+          } else {
+            if (temp[index].action == 'add') { // if added and then deleted, remove both.
+              temp.splice(index, 1);
+              return;
+            } 
+            temp[index] = { // if already in the database, we must delete it by sending this.
+              action: 'delete',
+              id: d.id
+            }
+          }
+          break;
       }
     });
     return temp;
@@ -184,11 +213,6 @@ export default function QuestionList({ initial }: { initial: Form }) {
   const handleAddOption = useCallback(
     (parentId: UniqueIdentifier) => addOption(parentId, { id: uid(), title: "Untitled option" }),
     [addOption, uid]
-  );
-
-  const handleRemoveQuestion = useCallback(
-    (id: UniqueIdentifier) => setItems(prev => prev.filter(item => item.id !== id)),
-    []
   );
 
   const handleRemoveOption = useCallback(

@@ -40,12 +40,24 @@ export type SaveForm = {
   data: FormAction[];
 }
 
-export type FormAction = {
-  id: UniqueIdentifier
-  action: 'add' | 'update' | 'delete'
-  title: string
-  type: QuestionType
-}
+export type FormAction =
+| {
+    action: 'add';
+    id: UniqueIdentifier;   
+    title: string;
+    type: QuestionType;  
+  }
+| {
+    action: 'update';
+    id: UniqueIdentifier;
+    title: string;
+    type: QuestionType;  
+  }
+| {
+    action: 'delete';
+    id: UniqueIdentifier;
+  };
+
 
 export type Response = {
   message: 'success' | 'fail' | string
