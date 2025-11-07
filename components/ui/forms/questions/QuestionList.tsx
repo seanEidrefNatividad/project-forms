@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useCallback } from "react";
+import { useMemo, useState, useCallback, useEffect, useRef } from "react";
 import {
   DndContext,
   closestCenter,
@@ -46,6 +46,9 @@ export default function QuestionList({ initial }: { initial: Form }) {
   const [formId] = useState(() => initial.id);
   const [isSaving, setIsSaving] = useState(false);
   const isOnline = useNetworkStatus();
+  const arrangeQuestions = useRef(false);
+  const didMount = useRef(false);
+  const timerRef = useRef<number | null>(null);
 
   const uid = useCallback(
     () => crypto?.randomUUID?.(),
@@ -74,6 +77,41 @@ export default function QuestionList({ initial }: { initial: Form }) {
     );
   }, []);
 
+  const localSaveRawFormActions = useCallback((data: FormAction) => {
+    const local = localStorage.getItem('rawFormActions') ?? '';
+    const currentSaved = local ? JSON.parse(local) : [];
+    localStorage.setItem('rawFormActions', JSON.stringify([...currentSaved, data]));
+  }, []);
+
+  const arrange = useCallback((items:Item[]) => {
+    const data: FormAction = {
+      action: 'arrangeQuestions',
+      order: items.map((i) => i.id)
+    }
+    localSaveRawFormActions(data) 
+  },[localSaveRawFormActions])
+
+  useEffect(() => {
+    if (!didMount.current) { didMount.current = true; return; } // skip initial render
+    if (arrangeQuestions.current) {
+      if (timerRef.current) clearTimeout(timerRef.current);
+      timerRef.current = window.setTimeout(() => {
+        arrangeQuestions.current = false;         // consume the flag
+        arrange(items);           // run with latest items
+        timerRef.current = null;
+      }, 150);                                // adjust debounce ms as you like
+
+      // cleanup if items changes again before timeout or on unmount
+      return () => {
+        if (timerRef.current) {
+          clearTimeout(timerRef.current);
+          timerRef.current = null;
+        }
+      };
+    }
+  }, [items, arrange]);
+
+
   const handleAddQuestion = () => {
     const id:UniqueIdentifier = uid();
     const newQuestion: Item = { id, title: "Untitled question", type: "short-text" };
@@ -83,12 +121,8 @@ export default function QuestionList({ initial }: { initial: Form }) {
       ...newQuestion
     }
     localSaveRawFormActions(data) // local storage
+    triggerArrangeQuestions()
   }
-  const localSaveRawFormActions = useCallback((data: FormAction) => {
-    const local = localStorage.getItem('rawFormActions') ?? '';
-    const currentSaved = local ? JSON.parse(local) : [];
-    localStorage.setItem('rawFormActions', JSON.stringify([...currentSaved, data]));
-  }, []);
 
   const changeQuestionTitle = useCallback((parentId: UniqueIdentifier, title: string) => {
     setItems(prev =>
@@ -109,6 +143,10 @@ export default function QuestionList({ initial }: { initial: Form }) {
     localSaveRawFormActions(data) // local storage
   },[changeQuestionTitle, localSaveRawFormActions]);
 
+  const triggerArrangeQuestions = () => {
+    arrangeQuestions.current = true;
+  }
+
   const removeQuestion = useCallback((id: UniqueIdentifier) => setItems(prev => prev.filter(item => item.id !== id)),[]);
   const handleRemoveQuestion = useCallback((id: UniqueIdentifier) => {
     removeQuestion(id) // UI
@@ -117,6 +155,7 @@ export default function QuestionList({ initial }: { initial: Form }) {
       id,
     }
     localSaveRawFormActions(data) // local storage
+    triggerArrangeQuestions()
     },[removeQuestion, localSaveRawFormActions]
   );
   
@@ -173,6 +212,7 @@ export default function QuestionList({ initial }: { initial: Form }) {
   const reduceFormAction = (data: FormAction[]): FormAction[] | undefined => {
     const temp:FormAction[] = [];
     let index: number;
+    let arrangeQuestionsIndex: number;
     data.forEach(d => {
       switch(d.action) {
         case 'add':
@@ -214,6 +254,14 @@ export default function QuestionList({ initial }: { initial: Form }) {
               title: d.title ? d.title : temp[index].title,
               type: d.type ? d.type : temp[index].type,
             }
+          }
+          break;
+        case 'arrangeQuestions':
+          arrangeQuestionsIndex = temp.findIndex(d => d.action === 'arrangeQuestions');
+          if (arrangeQuestionsIndex == -1) {
+            temp.push(d);
+          } else {
+            temp[arrangeQuestionsIndex] = d;
           }
           break;
       }
@@ -336,6 +384,7 @@ export default function QuestionList({ initial }: { initial: Form }) {
   const itemLookup = useMemo(() => createItemLookup(items), [items]);
 
   const handleQuestionDrag = (activeId: string, overId: string) => {
+    triggerArrangeQuestions()
     const oldIndex = itemLookup[activeId];
     const newIndex = itemLookup[overId];
     if (oldIndex === undefined || newIndex === undefined) {

@@ -27,13 +27,22 @@ with src as (
     action text,
     id uuid,
     title text,
-    type text
+    type text,
+    "order" jsonb
   )
 ),
+src_arrange_questions as (
+  -- pick the arrange action (adjust name if different) and expand its array to (id, pos)
+  select (elem)::uuid as id, position
+  from src s
+  cross join lateral jsonb_array_elements_text(s."order") with ordinality as t(elem, position)
+  where s.action = 'arrangeQuestions'
+),
 add_question as (
-  insert into questions (form_id, id)
-  select p_form_id, id
+  insert into questions (form_id, id, position)
+  select p_form_id, src.id, o.position
   from src
+  join src_arrange_questions as o on o.id = src.id
   where action = 'add'
   on conflict (id) do nothing
   returning 1
@@ -74,6 +83,18 @@ delete_question as (
     and q.id = s.id
     and q.is_deleted is distinct from true
   returning 1
+),
+arrange_questions as (
+  update public.questions q
+  set position = (o.position)::numeric
+  from src_arrange_questions o
+  where q.form_id = p_form_id
+    and q.id = o.id
+    and q.position is distinct from (o.position)::numeric
+  returning 
+    q.id::text as id,
+    q.position::text as old_pos,
+    o.position::text as new_pos
 )
 select jsonb_build_object(
   'add',      (select count(*) from add_question),
