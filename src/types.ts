@@ -44,8 +44,8 @@ export type FormAction =
 | {
     action: 'add' | 'addUpdate'
     id: UniqueIdentifier;   
-    title: string;
-    type: QuestionType;  
+    title?: string;
+    type?: QuestionType;  
   }
 | {
     action: 'update'
@@ -65,6 +65,13 @@ export type FormAction =
     order: UniqueIdentifier[];
     id?: never ;
     title?: never;
+    type?: never; 
+  }
+| {
+    action: 'addOption' | 'addUpdateOption'
+    question_id: UniqueIdentifier;
+    id: UniqueIdentifier;   
+    title: string;
     type?: never; 
   };
 

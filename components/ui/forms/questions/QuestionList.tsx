@@ -143,6 +143,33 @@ export default function QuestionList({ initial }: { initial: Form }) {
     localSaveRawFormActions(data) // local storage
   },[changeQuestionTitle, localSaveRawFormActions]);
 
+  const changeType = useCallback((id: UniqueIdentifier, type: QuestionType) => {
+    setItems(prev =>
+      prev.map(p => {
+        if (p.id !== id) return p;
+        if (type === "multiple-choice") {
+          return {
+            id: p.id,
+            title: p.title,
+            type,
+            options: [],
+          };
+        }
+        return { id: p.id, title: p.title, type };
+      })
+    );
+  }, []);
+  const handleChangeType = useCallback((id: UniqueIdentifier, type: QuestionType) => {
+    changeType(id, type);
+    const data: FormAction = {
+      action: 'update',
+      id,
+      type
+    }
+    localSaveRawFormActions(data) // local storage
+  },[changeQuestionTitle, localSaveRawFormActions]);
+
+
   const triggerArrangeQuestions = () => {
     arrangeQuestions.current = true;
   }
@@ -249,7 +276,7 @@ export default function QuestionList({ initial }: { initial: Form }) {
               return;
             }
             temp[index] = {
-              action: 'update',
+              action: (temp[index].action == 'addUpdate') ? 'addUpdate' : 'update',
               id: d.id,
               title: d.title ? d.title : temp[index].title,
               type: d.type ? d.type : temp[index].type,
@@ -294,11 +321,6 @@ export default function QuestionList({ initial }: { initial: Form }) {
     return reduced;
   }
 
-  const handleAddOption = useCallback(
-    (parentId: UniqueIdentifier) => addOption(parentId, { id: uid(), title: "Untitled option" }),
-    [addOption, uid]
-  );
-
   const handleRemoveOption = useCallback(
     (parentId: UniqueIdentifier, optionId: UniqueIdentifier) => {
       setItems(prev =>
@@ -311,27 +333,6 @@ export default function QuestionList({ initial }: { initial: Form }) {
     },
     []
   );
-
-  const handleChangeType = useCallback(
-    (id: UniqueIdentifier, type: QuestionType) => {
-      setItems(prev =>
-        prev.map(p => {
-          if (p.id !== id) return p;
-          if (type === "multiple-choice") {
-            return {
-              id: p.id,
-              title: p.title,
-              type,
-              options: [{ id: uid(), title: "Untitled option" }],
-            };
-          }
-          return { id: p.id, title: p.title, type };
-        })
-      );
-    },
-    [uid]
-  );
-
     
   const [activeItem, setActiveItem] = useState<ActiveDrag | null>(null);
 
