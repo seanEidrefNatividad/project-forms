@@ -71,7 +71,7 @@ export default function QuestionList({ initial }: { initial: Form }) {
     setItems(prev =>
       prev.map(q =>
         q.type === "multiple-choice" && q.id === parentId
-          ? { ...q, options: [...q.options, o] }
+          ? { ...q, options: q.options ? [...q.options, o] : [o] }
           : q
       )
     );
@@ -111,6 +111,18 @@ export default function QuestionList({ initial }: { initial: Form }) {
     }
   }, [items, arrange]);
 
+
+  const handleAddOption = useCallback((parentId: UniqueIdentifier) => {
+    const id:UniqueIdentifier = uid();
+    const newOption: Option = { id, title: "Untitled Option"};
+    addOption(parentId, newOption) // ui
+    const data: FormAction = {
+      action: 'addOption',
+      question_id: parentId,
+      ...newOption
+    }
+    localSaveRawFormActions(data) // local storage
+  }, [addOption, uid]);
 
   const handleAddQuestion = () => {
     const id:UniqueIdentifier = uid();
@@ -242,6 +254,9 @@ export default function QuestionList({ initial }: { initial: Form }) {
     let arrangeQuestionsIndex: number;
     data.forEach(d => {
       switch(d.action) {
+        case 'addOption':
+          temp.push(d);
+          break;
         case 'add':
           temp.push(d);
           break;

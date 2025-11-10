@@ -25,6 +25,7 @@ with src as (
   select *
   from jsonb_to_recordset(p_actions) as r(
     action text,
+    question_id uuid,
     id uuid,
     title text,
     type text,
@@ -37,6 +38,14 @@ src_arrange_questions as (
   from src s
   cross join lateral jsonb_array_elements_text(s."order") with ordinality as t(elem, position)
   where s.action = 'arrangeQuestions'
+),
+add_options as (
+  insert into options (question_id, id)
+  select src.question_id, src.id
+  from src
+  where action = 'addOption'
+  on conflict (id) do nothing
+  returning 1
 ),
 add_question as (
   insert into questions (form_id, id, position)
@@ -100,7 +109,8 @@ select jsonb_build_object(
   'add',      (select count(*) from add_question),
   'addUpdate',(select count(*) from addUpdate_question),
   'update',   (select count(*) from update_question),
-  'removed',  (select count(*) from delete_question)
+  'removed',  (select count(*) from delete_question),
+  'addOption',(select count(*) from add_options)
 );
 $$;
 
