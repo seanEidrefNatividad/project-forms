@@ -19,7 +19,10 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
     .select(`
       id, title, description,
       questions:questions (
-        id, title, type
+        id, title, type, 
+        options:options (
+          id, title
+        )
       )
     `)
     .eq('id', params.id)
@@ -39,6 +42,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
         id: q.id,
         title: q.title,
         type: q.type,
+        options: q.options,
       }
     })
   }
