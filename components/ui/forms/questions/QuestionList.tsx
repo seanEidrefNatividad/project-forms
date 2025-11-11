@@ -122,7 +122,7 @@ export default function QuestionList({ initial }: { initial: Form }) {
       ...newOption
     }
     localSaveRawFormActions(data) // local storage
-  }, [addOption, uid]);
+  }, [addOption, uid, localSaveRawFormActions]);
 
   const handleAddQuestion = () => {
     const id:UniqueIdentifier = uid();
