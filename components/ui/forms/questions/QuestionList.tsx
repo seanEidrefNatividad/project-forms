@@ -179,7 +179,7 @@ export default function QuestionList({ initial }: { initial: Form }) {
       type
     }
     localSaveRawFormActions(data) // local storage
-  },[changeQuestionTitle, localSaveRawFormActions]);
+  },[changeType, localSaveRawFormActions]);
 
 
   const triggerArrangeQuestions = () => {
