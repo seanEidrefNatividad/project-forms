@@ -172,6 +172,7 @@ select jsonb_build_object(
   'update',   (select count(*) from update_question),
   'removed',  (select count(*) from delete_question),
   'addOption',(select count(*) from add_options),
+  'addUpdateOptions',(select count(*) from addUpdate_options),
   'updateOptions',   (select count(*) from update_options),
   'removedOptions',  (select count(*) from delete_options)
 );
