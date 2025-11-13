@@ -27,7 +27,9 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
     `)
     .eq('id', params.id)
     .eq('questions.is_deleted', false)
-    .order('position', { foreignTable: 'questions' })
+    .eq('questions.options.is_deleted', false)
+    .order('position', { foreignTable: 'questions', ascending: true })
+    .order('position', { foreignTable: 'questions.options',  ascending: true })
     .maybeSingle();
 
   if (error) throw error;
