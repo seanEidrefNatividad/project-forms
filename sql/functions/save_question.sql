@@ -69,12 +69,14 @@ add_question as (
   returning 1
 ),
 addUpdate_question as (
-  insert into questions (form_id, id, title, type)
+  insert into questions (form_id, id, title, type, position)
   select p_form_id, 
-    id,  
-    title,
-    type
-  from src
+    s.id,  
+    s.title,
+    s.type,
+    o.position
+  from src s
+  join src_arrange_questions as o on o.id = s.id
   where action = 'addUpdate'
   on conflict (id) do nothing
   returning 1
@@ -95,8 +97,10 @@ update_question as (
   update questions q
   set
     title = coalesce(nullif(s.title,''), q.title),
-    type  = coalesce(nullif(s.type ,''), q.type)
+    type  = coalesce(nullif(s.type ,''), q.type),
+    position = coalesce(o.position, q.position)
   from src s
+  left join src_arrange_questions as o on o.id = s.id
   where s.action = 'update'
     and q.form_id = p_form_id
     and q.id = s.id
