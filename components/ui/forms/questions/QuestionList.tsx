@@ -197,6 +197,29 @@ export default function QuestionList({ initial }: { initial: Form }) {
     triggerArrangeQuestions()
     },[removeQuestion, localSaveRawFormActions]
   );
+
+  const removeOption = useCallback(
+    (parentId: UniqueIdentifier, optionId: UniqueIdentifier) => {
+      setItems(prev =>
+        prev.map(q =>
+          q.type === "multiple-choice" && q.id === parentId
+            ? { ...q, options: q.options.filter(o => o.id !== optionId) }
+            : q
+        )
+      );
+    },
+    []
+  );
+
+  const handleRemoveOption = useCallback((parentId: UniqueIdentifier, optionId: UniqueIdentifier) => {
+    removeOption(parentId, optionId) // UI
+    const data: FormAction = {
+      action: 'deleteOption',
+      id: optionId
+    }
+    localSaveRawFormActions(data) // local storage
+    },[removeOption, localSaveRawFormActions]
+  );
   
 
 
@@ -275,6 +298,21 @@ export default function QuestionList({ initial }: { initial: Form }) {
             }
           }
           break;
+        case 'deleteOption':
+          index = findFormActionIndex(temp, d.id);
+          if (index == -1) {
+            temp.push(d);
+          } else {
+            if (temp[index].action == 'addOption' || temp[index].action == 'addUpdateOption') { // remove, do not send to database
+              temp.splice(index, 1);
+              return;
+            } 
+            temp[index] = { // if already in the database, we must delete it by sending this.
+              action: 'deleteOption',
+              id: d.id,
+            }
+          }
+          break;
         case 'update':
           index = findFormActionIndex(temp, d.id);
           if (index == -1) {
@@ -336,19 +374,6 @@ export default function QuestionList({ initial }: { initial: Form }) {
     return reduced;
   }
 
-  const handleRemoveOption = useCallback(
-    (parentId: UniqueIdentifier, optionId: UniqueIdentifier) => {
-      setItems(prev =>
-        prev.map(q =>
-          q.type === "multiple-choice" && q.id === parentId
-            ? { ...q, options: q.options.filter(o => o.id !== optionId) }
-            : q
-        )
-      );
-    },
-    []
-  );
-    
   const [activeItem, setActiveItem] = useState<ActiveDrag | null>(null);
 
   function handleDragStart(e: DragStartEvent) {

@@ -93,6 +93,15 @@ delete_question as (
     and q.is_deleted is distinct from true
   returning 1
 ),
+delete_options as (
+  update options o
+  set is_deleted = true
+  from src s
+  where s.action = 'deleteOption'
+    and o.id = s.id
+    and o.is_deleted is distinct from true
+  returning 1
+),
 arrange_questions as (
   update public.questions q
   set position = (o.position)::numeric
@@ -110,7 +119,8 @@ select jsonb_build_object(
   'addUpdate',(select count(*) from addUpdate_question),
   'update',   (select count(*) from update_question),
   'removed',  (select count(*) from delete_question),
-  'addOption',(select count(*) from add_options)
+  'addOption',(select count(*) from add_options),
+  'removedOptions',  (select count(*) from delete_options)
 );
 $$;
 

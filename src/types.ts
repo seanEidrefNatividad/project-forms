@@ -54,6 +54,13 @@ export type FormAction =
     type?: QuestionType;  
   }
 | {
+    action: 'deleteOption';
+    id: UniqueIdentifier;
+    title?: never;
+    type?: never; 
+    order?: never;
+  }
+| {
     action: 'delete';
     id: UniqueIdentifier;
     title?: never;
