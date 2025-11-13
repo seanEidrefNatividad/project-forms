@@ -39,10 +39,22 @@ src_arrange_questions as (
   cross join lateral jsonb_array_elements_text(s."order") with ordinality as t(elem, position)
   where s.action = 'arrangeQuestions'
 ),
+src_arrange_options as (
+  select
+    (obj->>'question_id')::uuid as question_id,
+    (opt_elem)::uuid            as option_id,
+    (opt_pos)::numeric     as position
+  from src s
+  cross join lateral jsonb_array_elements(s."order") obj
+  cross join lateral jsonb_array_elements_text(obj->'option_order')
+                      with ordinality as oo(opt_elem, opt_pos)
+  where s.action = 'arrangeOptions'
+),
 add_options as (
-  insert into options (question_id, id)
-  select src.question_id, src.id
+  insert into options (question_id, id, title, position)
+  select src.question_id, src.id, src.title, o.position
   from src
+  join src_arrange_options as o on o.option_id = src.id
   where action = 'addOption'
   on conflict (id) do nothing
   returning 1
@@ -72,7 +84,9 @@ addUpdate_options as (
   select s.question_id, 
     s.id,  
     s.title,
+    ao.position
   from src s
+  join src_arrange_options as ao on ao.option_id = s.id
   where action = 'addUpdateOption'
   on conflict (id) do nothing
   returning 1
@@ -97,7 +111,9 @@ update_options as (
   update options o
   set
     title = coalesce(nullif(s.title,''), o.title),
+    position = ao.position
   from src s
+  join src_arrange_options as ao on ao.option_id = s.id
   where s.action = 'updateOption'
     and o.question_id = s.question_id
     and o.id = s.id
@@ -136,7 +152,20 @@ arrange_questions as (
     q.id::text as id,
     q.position::text as old_pos,
     o.position::text as new_pos
+),
+arrange_options as (
+  update public.options o
+  set position = ao.position
+  from src_arrange_options ao
+  join public.questions q
+    on q.id = ao.question_id
+   and q.form_id = p_form_id
+  where o.question_id = ao.question_id
+    and o.id = ao.option_id
+    and o.position is distinct from ao.position
+  returning 1
 )
+
 select jsonb_build_object(
   'add',      (select count(*) from add_question),
   'addUpdate',(select count(*) from addUpdate_question),

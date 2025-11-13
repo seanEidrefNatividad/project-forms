@@ -88,8 +88,20 @@ export type FormAction =
     id: UniqueIdentifier;   
     title: string;
     type?: never;
+    order?: never;
+  }
+| {
+    action: 'arrangeOptions';
+    order: Orders[];
+    id?: never ;
+    title?: never;
+    type?: never; 
   };
 
+export type Orders = {
+  question_id: UniqueIdentifier;
+  option_order: UniqueIdentifier[];
+}
 export type Response = {
   message: 'success' | 'fail' | string
 }

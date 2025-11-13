@@ -38,7 +38,7 @@ const typeAwareClosestCenter: CollisionDetection = (args) => {
 
 import QuestionItem from "./QuestionItem";
 
-import type { Option, Item, Form, QuestionType, ActiveDrag, SaveForm, FormAction, Response } from "@/src/types" 
+import type { Option, Item, Form, QuestionType, ActiveDrag, SaveForm, FormAction, Response, Orders } from "@/src/types" 
 
 
 export default function QuestionList({ initial }: { initial: Form }) {
@@ -47,6 +47,8 @@ export default function QuestionList({ initial }: { initial: Form }) {
   const [isSaving, setIsSaving] = useState(false);
   const isOnline = useNetworkStatus();
   const arrangeQuestions = useRef(false);
+  const arrangeOptions = useRef(false);
+  const arrangeOptionsQuestionIds = useRef<UniqueIdentifier[]>([]);
   const didMount = useRef(false);
   const timerRef = useRef<number | null>(null);
 
@@ -72,6 +74,20 @@ export default function QuestionList({ initial }: { initial: Form }) {
     const currentSaved = local ? JSON.parse(local) : [];
     localStorage.setItem('rawFormActions', JSON.stringify([...currentSaved, data]));
   }, []);
+
+  const arrangeOpt = useCallback((items:Item[]) => {
+    const temp = arrangeOptionsQuestionIds.current.map(id => ({
+      question_id: id,
+      option_order: items.find(i => i.id === id)?.options?.map(o => o.id) ?? []
+    }));
+
+    const data: FormAction = {
+      action: 'arrangeOptions',
+      order: temp
+    }
+    localSaveRawFormActions(data) 
+   
+  },[localSaveRawFormActions])
 
   const arrange = useCallback((items:Item[]) => {
     const data: FormAction = {
@@ -99,7 +115,24 @@ export default function QuestionList({ initial }: { initial: Form }) {
         }
       };
     }
-  }, [items, arrange]);
+    if (arrangeOptions.current) {
+      if (timerRef.current) clearTimeout(timerRef.current);
+      timerRef.current = window.setTimeout(() => {
+        arrangeOptions.current = false;         // consume the flag
+        arrangeOpt(items);           // run with latest items
+        arrangeOptionsQuestionIds.current = [];
+        timerRef.current = null;
+      }, 150);                                // adjust debounce ms as you like
+
+      // cleanup if items changes again before timeout or on unmount
+      return () => {
+        if (timerRef.current) {
+          clearTimeout(timerRef.current);
+          timerRef.current = null;
+        }
+      };
+    }
+  }, [items, arrange, arrangeOpt]);
 
 
   const handleAddOption = useCallback((parentId: UniqueIdentifier) => {
@@ -112,7 +145,7 @@ export default function QuestionList({ initial }: { initial: Form }) {
       ...newOption
     }
     localSaveRawFormActions(data) // local storage
-  }, [addOption, uid, localSaveRawFormActions]);
+    triggerArrangeOptions(parentId)
 
   const handleAddQuestion = () => {
     const id:UniqueIdentifier = uid();
@@ -197,6 +230,11 @@ export default function QuestionList({ initial }: { initial: Form }) {
     arrangeQuestions.current = true;
   }
 
+  const triggerArrangeOptions = (parentId: UniqueIdentifier) => {
+    arrangeOptions.current = true;
+    if (!arrangeOptionsQuestionIds.current.includes(parentId)) arrangeOptionsQuestionIds.current.push(parentId);
+  }
+
   const removeQuestion = useCallback((id: UniqueIdentifier) => setItems(prev => prev.filter(item => item.id !== id)),[]);
   const handleRemoveQuestion = useCallback((id: UniqueIdentifier) => {
     removeQuestion(id) // UI
@@ -229,6 +267,7 @@ export default function QuestionList({ initial }: { initial: Form }) {
       id: optionId
     }
     localSaveRawFormActions(data) // local storage
+    triggerArrangeOptions(parentId)
     },[removeOption, localSaveRawFormActions]
   );
   
@@ -286,6 +325,7 @@ export default function QuestionList({ initial }: { initial: Form }) {
     const temp:FormAction[] = [];
     let index: number;
     let arrangeQuestionsIndex: number;
+    let arrangeOptionsIndex: number;
     data.forEach(d => {
       switch(d.action) {
         case 'addOption':
@@ -372,6 +412,39 @@ export default function QuestionList({ initial }: { initial: Form }) {
             temp.push(d);
           } else {
             temp[arrangeQuestionsIndex] = d;
+          }
+          break;
+        case 'arrangeOptions':
+          arrangeOptionsIndex = temp.findIndex(d => d.action === 'arrangeOptions');
+  
+          if (arrangeOptionsIndex === -1) {
+            temp.push(d);
+          } else {
+            // Narrow both to arrangeOptions variant
+            const existing = temp[arrangeOptionsIndex] as Extract<FormAction, { action: 'arrangeOptions' }>;
+            const incoming = d as Extract<FormAction, { action: 'arrangeOptions' }>;
+            
+            // Now both have order: Orders[]
+            const allOrders = [...(existing.order ?? []), ...(incoming.order ?? [])];
+            
+            // Merge duplicate question_ids
+            const temp_order: Orders[] = [];
+            allOrders.forEach(o => {
+              const idx = temp_order.findIndex(t => t.question_id === o.question_id);
+              if (idx === -1) {
+                temp_order.push(o);
+              } else {
+                // Merge option_orders for same question
+                temp_order[idx].option_order = [
+                  ...o.option_order
+                ];
+              }
+            });
+            
+            temp[arrangeOptionsIndex] = {
+              action: 'arrangeOptions',
+              order: temp_order
+            };
           }
           break;
       }
@@ -466,6 +539,7 @@ export default function QuestionList({ initial }: { initial: Form }) {
   };
 
   const handleOptionDrag = (activeId: string, overId: string, parentId: UniqueIdentifier) => {
+    triggerArrangeOptions(parentId)
     const parentIndex = itemLookup[parentId];
     const childIndexOld = itemLookup[activeId];
     const childIndexNew = itemLookup[overId];
