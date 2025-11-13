@@ -55,16 +55,6 @@ export default function QuestionList({ initial }: { initial: Form }) {
     []
   );
 
-  const handleChangeOptionTitle = useCallback((parentId: UniqueIdentifier, optionId: UniqueIdentifier, title: string) => {
-    setItems(prev =>
-      prev.map(q =>
-        q.id === parentId && q.options
-          ? { ...q, options: q.options.map(o => o.id === optionId ? {...o, title} : o)} 
-          : q
-      )
-    )
-  },[]);
-
   const addQuestion = useCallback((q: Item) => setItems(prev => [...prev, q]), []);
 
   const addOption = useCallback((parentId: UniqueIdentifier, o: Option) => {
@@ -154,6 +144,27 @@ export default function QuestionList({ initial }: { initial: Form }) {
     }
     localSaveRawFormActions(data) // local storage
   },[changeQuestionTitle, localSaveRawFormActions]);
+
+  const changeOptionTitle = useCallback((parentId: UniqueIdentifier, optionId: UniqueIdentifier, title: string) => {
+    setItems(prev =>
+      prev.map(q =>
+        q.id === parentId && q.options
+          ? { ...q, options: q.options.map(o => o.id === optionId ? {...o, title} : o)} 
+          : q
+      )
+    )
+  },[]);
+
+  const handleChangeOptionTitle = useCallback((parentId: UniqueIdentifier, optionId: UniqueIdentifier, title: string) => {
+    changeOptionTitle(parentId, optionId, title) // UI
+    const data: FormAction = {
+      action: 'updateOption',
+      question_id: parentId,
+      id: optionId,
+      title,
+    }
+    localSaveRawFormActions(data) // local storage
+  },[changeOptionTitle, localSaveRawFormActions]);
 
   const changeType = useCallback((id: UniqueIdentifier, type: QuestionType) => {
     setItems(prev =>
@@ -333,6 +344,25 @@ export default function QuestionList({ initial }: { initial: Form }) {
               id: d.id,
               title: d.title ? d.title : temp[index].title,
               type: d.type ? d.type : temp[index].type,
+            }
+          }
+          break;
+        case 'updateOption':
+          index = findFormActionIndex(temp, d.id);
+          if (index == -1) {
+            temp.push(d);
+          } else {
+           
+            if (temp[index].action == 'addOption') {
+              temp[index] = {
+                ...d,
+                action: 'addUpdateOption',
+              }
+              return;
+            }
+            temp[index] = {
+              ...d,
+              action: (temp[index].action == 'addUpdateOption') ? 'addUpdateOption' : 'updateOption',
             }
           }
           break;

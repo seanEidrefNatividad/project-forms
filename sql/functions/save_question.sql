@@ -67,6 +67,16 @@ addUpdate_question as (
   on conflict (id) do nothing
   returning 1
 ),
+addUpdate_options as (
+  insert into options (question_id, id, title, position)
+  select s.question_id, 
+    s.id,  
+    s.title,
+  from src s
+  where action = 'addUpdateOption'
+  on conflict (id) do nothing
+  returning 1
+),
 update_question as (
   update questions q
   set
@@ -80,6 +90,19 @@ update_question as (
       (s.title is not null and btrim(s.title) <> '' and s.title is distinct from q.title)
       or
       (s.type  is not null and btrim(s.type)  <> '' and s.type  is distinct from q.type)
+    )
+  returning 1
+),
+update_options as (
+  update options o
+  set
+    title = coalesce(nullif(s.title,''), o.title),
+  from src s
+  where s.action = 'updateOption'
+    and o.question_id = s.question_id
+    and o.id = s.id
+    and (
+      (s.title is not null and btrim(s.title) <> '' and s.title is distinct from o.title)
     )
   returning 1
 ),
@@ -120,6 +143,7 @@ select jsonb_build_object(
   'update',   (select count(*) from update_question),
   'removed',  (select count(*) from delete_question),
   'addOption',(select count(*) from add_options),
+  'updateOptions',   (select count(*) from update_options),
   'removedOptions',  (select count(*) from delete_options)
 );
 $$;

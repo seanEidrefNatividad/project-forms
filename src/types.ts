@@ -80,6 +80,14 @@ export type FormAction =
     id: UniqueIdentifier;   
     title: string;
     type?: never; 
+    order?: never;
+  }
+| {
+    action: 'updateOption';
+    question_id: UniqueIdentifier;
+    id: UniqueIdentifier;   
+    title: string;
+    type?: never;
   };
 
 export type Response = {
