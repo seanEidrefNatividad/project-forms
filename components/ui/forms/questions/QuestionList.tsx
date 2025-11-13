@@ -59,15 +59,23 @@ export default function QuestionList({ initial }: { initial: Form }) {
 
   const addQuestion = useCallback((q: Item) => setItems(prev => [...prev, q]), []);
 
-  const addOption = useCallback((parentId: UniqueIdentifier, o: Option) => {
+  const addOption = useCallback((parentId: UniqueIdentifier): Option | undefined => {
+    const id:UniqueIdentifier = uid();
+    let currOption: Option | undefined;
+
     setItems(prev =>
-      prev.map(q =>
-        q.type === "multiple-choice" && q.id === parentId
-          ? { ...q, options: q.options ? [...q.options, o] : [o] }
-          : q
-      )
+      prev.map(q => {
+        if (q.type === "multiple-choice" && q.id === parentId) {
+          const optNum = (q.options?.length ?? 0) + 1;
+          currOption = {id, title: 'Option '+optNum};
+          return { ...q, options: q.options ? [...q.options, currOption] : [currOption] }
+        } else {
+          return q
+        }
+      })
     );
-  }, []);
+    return currOption;
+  }, [uid]);
 
   const localSaveRawFormActions = useCallback((data: FormAction) => {
     const local = localStorage.getItem('rawFormActions') ?? '';
@@ -136,9 +144,8 @@ export default function QuestionList({ initial }: { initial: Form }) {
 
 
   const handleAddOption = useCallback((parentId: UniqueIdentifier) => {
-    const id:UniqueIdentifier = uid();
-    const newOption: Option = { id, title: "Untitled Option"};
-    addOption(parentId, newOption) // ui
+    const newOption = addOption(parentId) // ui
+    if (!newOption) return;
     const data: FormAction = {
       action: 'addOption',
       question_id: parentId,
@@ -146,6 +153,7 @@ export default function QuestionList({ initial }: { initial: Form }) {
     }
     localSaveRawFormActions(data) // local storage
     triggerArrangeOptions(parentId)
+  }, [addOption, localSaveRawFormActions]);
 
   const handleAddQuestion = () => {
     const id:UniqueIdentifier = uid();
