@@ -115,9 +115,9 @@ update_options as (
   update options o
   set
     title = coalesce(nullif(s.title,''), o.title),
-    position = ao.position
+    position = coalesce(ao.position, o.position) 
   from src s
-  join src_arrange_options as ao on ao.option_id = s.id
+  left join src_arrange_options as ao on ao.option_id = s.id
   where s.action = 'updateOption'
     and o.question_id = s.question_id
     and o.id = s.id
