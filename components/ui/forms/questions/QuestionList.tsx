@@ -44,13 +44,18 @@ import type { Option, Item, Form, QuestionType, ActiveDrag, SaveForm, FormAction
 export default function QuestionList({ initial }: { initial: Form }) {
   const [items, setItems] = useState<Item[]>(initial.questions || []);
   const [formId] = useState(() => initial.id);
-  const [isSaving, setIsSaving] = useState(false);
   const isOnline = useNetworkStatus();
   const arrangeQuestions = useRef(false);
   const arrangeOptions = useRef(false);
   const arrangeOptionsQuestionIds = useRef<UniqueIdentifier[]>([]);
   const didMount = useRef(false);
   const timerRef = useRef<number | null>(null);
+  const didMountAutosave = useRef(false);
+  const autosaveDebounce = useRef<number | null>(null);
+  const [savingStatus, setSavingStatus] = useState('saved');
+  const [autosaveMode, setAutosaveMode] = useState(false);
+  const itemsRef = useRef<Item[]>([]);
+  useEffect(() => { itemsRef.current = items; }, [items]);
 
   const uid = useCallback(
     () => crypto?.randomUUID?.(),
@@ -59,29 +64,240 @@ export default function QuestionList({ initial }: { initial: Form }) {
 
   const addQuestion = useCallback((q: Item) => setItems(prev => [...prev, q]), []);
 
-  const addOption = useCallback((parentId: UniqueIdentifier): Option | undefined => {
-    const id:UniqueIdentifier = uid();
-    let currOption: Option | undefined;
+  const localSaveProcessedFormActions = useCallback((data: FormAction[]) => {
+    const local = localStorage.getItem('processedFormActions') ?? '';
+    const currentSaved = local ? JSON.parse(local) : [];
+    localStorage.setItem('processedFormActions', JSON.stringify([...currentSaved, data].flat()));
+  },[])
+  const getLocalSavedRawFormAction = useCallback((): FormAction[] | undefined  => {
+    const data = JSON.parse(localStorage.getItem('rawFormActions') ?? '[]');
+    localStorage.removeItem('rawFormActions');
+    return data;
+  },[])
 
-    setItems(prev =>
-      prev.map(q => {
-        if (q.type === "multiple-choice" && q.id === parentId) {
-          const optNum = (q.options?.length ?? 0) + 1;
-          currOption = {id, title: 'Option '+optNum};
-          return { ...q, options: q.options ? [...q.options, currOption] : [currOption] }
+  const getLocalSavedProcessedFormAction = useCallback((): FormAction[] | undefined  => {
+    const data = JSON.parse(localStorage.getItem('processedFormActions') ?? '[]');
+    localStorage.removeItem('processedFormActions');
+    return data;
+  },[])
+
+  const findFormActionIndex = useCallback((data: FormAction[], id: UniqueIdentifier): number => { 
+    return data.findIndex(d => d.id === id);
+  },[])
+
+  const reduceFormAction = useCallback((data: FormAction[]): FormAction[] | undefined => {
+    const temp:FormAction[] = [];
+    let index: number;
+    let arrangeQuestionsIndex: number;
+    let arrangeOptionsIndex: number;
+    data.forEach(d => {
+      switch(d.action) {
+        case 'addOption':
+          temp.push(d);
+          break;
+        case 'add':
+          temp.push(d);
+          break;
+        case 'delete':
+          index = findFormActionIndex(temp, d.id);
+          if (index == -1) {
+            temp.push(d);
+          } else {
+            if (temp[index].action == 'add' || temp[index].action == 'addUpdate') { // remove, do not send to database
+              temp.splice(index, 1);
+              return;
+            } 
+            temp[index] = { // if already in the database, we must delete it by sending this.
+              action: 'delete',
+              id: d.id,
+            }
+          }
+          break;
+        case 'deleteOption':
+          index = findFormActionIndex(temp, d.id);
+          if (index == -1) {
+            temp.push(d);
+          } else {
+            if (temp[index].action == 'addOption' || temp[index].action == 'addUpdateOption') { // remove, do not send to database
+              temp.splice(index, 1);
+              return;
+            } 
+            temp[index] = { // if already in the database, we must delete it by sending this.
+              action: 'deleteOption',
+              id: d.id,
+            }
+          }
+          break;
+        case 'update':
+          index = findFormActionIndex(temp, d.id);
+          if (index == -1) {
+            temp.push(d);
+          } else {
+           
+            if (temp[index].action == 'add') {
+              temp[index] = {
+                action: 'addUpdate',
+                id: d.id,
+                title: d.title ? d.title : 'Untitled question',
+                type: d.type ? d.type : 'short-text'
+              }
+              return;
+            }
+            temp[index] = {
+              action: (temp[index].action == 'addUpdate') ? 'addUpdate' : 'update',
+              id: d.id,
+              title: d.title ? d.title : temp[index].title,
+              type: d.type ? d.type : temp[index].type,
+            }
+          }
+          break;
+        case 'updateOption':
+          index = findFormActionIndex(temp, d.id);
+          if (index == -1) {
+            temp.push(d);
+          } else {
+           
+            if (temp[index].action == 'addOption') {
+              temp[index] = {
+                ...d,
+                action: 'addUpdateOption',
+              }
+              return;
+            }
+            temp[index] = {
+              ...d,
+              action: (temp[index].action == 'addUpdateOption') ? 'addUpdateOption' : 'updateOption',
+            }
+          }
+          break;
+        case 'arrangeQuestions':
+          arrangeQuestionsIndex = temp.findIndex(d => d.action === 'arrangeQuestions');
+          if (arrangeQuestionsIndex == -1) {
+            temp.push(d);
+          } else {
+            temp[arrangeQuestionsIndex] = d;
+          }
+          break;
+        case 'arrangeOptions':
+          arrangeOptionsIndex = temp.findIndex(d => d.action === 'arrangeOptions');
+  
+          if (arrangeOptionsIndex === -1) {
+            temp.push(d);
+          } else {
+            // Narrow both to arrangeOptions variant
+            const existing = temp[arrangeOptionsIndex] as Extract<FormAction, { action: 'arrangeOptions' }>;
+            const incoming = d as Extract<FormAction, { action: 'arrangeOptions' }>;
+            
+            // Now both have order: Orders[]
+            const allOrders = [...(existing.order ?? []), ...(incoming.order ?? [])];
+            
+            // Merge duplicate question_ids
+            const temp_order: Orders[] = [];
+            allOrders.forEach(o => {
+              const idx = temp_order.findIndex(t => t.question_id === o.question_id);
+              if (idx === -1) {
+                temp_order.push(o);
+              } else {
+                // Merge option_orders for same question
+                temp_order[idx].option_order = [
+                  ...o.option_order
+                ];
+              }
+            });
+            
+            temp[arrangeOptionsIndex] = {
+              action: 'arrangeOptions',
+              order: temp_order
+            };
+          }
+          break;
+      }
+    });
+    return temp;
+  },[findFormActionIndex])
+
+  const processFormActions = useCallback((): FormAction[] | undefined => {
+    const formActions: FormAction[] = [];
+
+    const localDraft: FormAction[] | undefined = getLocalSavedProcessedFormAction();
+    if (localDraft) {
+      formActions.push(...localDraft);
+    }
+  
+    const localData: FormAction[] | undefined = getLocalSavedRawFormAction();
+    if (localData) {
+      formActions.push(...localData);
+    }
+
+    const reduced = reduceFormAction(formActions)
+
+    if (!reduced) {
+      alert('No draft found to save locally.')
+      return;
+    }
+
+    localSaveProcessedFormActions(reduced)
+
+    return reduced;
+  },[getLocalSavedProcessedFormAction, getLocalSavedRawFormAction, reduceFormAction, localSaveProcessedFormActions])
+
+  const handleSave = useCallback(async () => {
+    const localData = processFormActions();
+    if (!localData || localData.length < 1) {
+      alert('No changes to save')
+      return;
+    }
+
+    if (!isOnline) {
+      alert('You are offline. Changes saved locally and will be synced when back online.')
+      return;
+    } else {
+      if (!autosaveMode) setSavingStatus('saving...')
+
+      const saving: SaveForm = {
+        formId: formId,
+        data: localData
+      }
+      const data: Response = await save(saving)
+      if (data) {
+        if (!autosaveMode) setSavingStatus('saved')
+
+        if(data.message == 'success') {
+          console.log(data.message)
+          localStorage.removeItem('processedFormActions');
         } else {
-          return q
+          alert('error')
+          setSavingStatus('saving...')
         }
-      })
-    );
-    return currOption;
-  }, [uid]);
+      }
+    }
+  }, [processFormActions, isOnline, formId, autosaveMode, setSavingStatus]);
+
+  useEffect(() => {
+    if (!didMountAutosave.current) { didMountAutosave.current = true; return; } // skip initial render
+    if (!autosaveMode) return
+    if (savingStatus == 'saving...') {
+      autosaveDebounce.current = window.setTimeout(() => {
+        handleSave()
+        setSavingStatus('saved')
+      }, 4500);
+    }
+    return () => { // Cleanup function: clear the timeout if inputValue changes before the delay
+      if (autosaveDebounce.current) {
+        clearTimeout(autosaveDebounce.current);
+      }
+    };
+  }, [items, handleSave, savingStatus, autosaveMode]); // Re-run effect only when inputValue changes
 
   const localSaveRawFormActions = useCallback((data: FormAction) => {
     const local = localStorage.getItem('rawFormActions') ?? '';
     const currentSaved = local ? JSON.parse(local) : [];
     localStorage.setItem('rawFormActions', JSON.stringify([...currentSaved, data]));
-  }, []);
+
+    if (!autosaveMode) return;
+    setSavingStatus('saving...')
+
+  }, [autosaveMode]);
 
   const arrangeOpt = useCallback((items:Item[]) => {
     const temp = arrangeOptionsQuestionIds.current.map(id => ({
@@ -142,6 +358,22 @@ export default function QuestionList({ initial }: { initial: Form }) {
     }
   }, [items, arrange, arrangeOpt]);
 
+  const addOption = useCallback((parentId: UniqueIdentifier): Option | undefined => {
+    const q = itemsRef.current.find(i => i.type === 'multiple-choice' && i.id === parentId);
+    if (!q) return;                                   // no matching question
+
+    const id = uid();
+    const optNum = (q.options?.length ?? 0) + 1;
+    const created: Option = { id, title: `Option ${optNum}` };
+
+    setItems(prev => prev.map(item =>
+      item.id === parentId && item.type === 'multiple-choice'
+        ? { ...item, options: item.options ? [...item.options, created] : [created] }
+        : item
+    ));
+
+    return created;
+  }, [uid]);
 
   const handleAddOption = useCallback((parentId: UniqueIdentifier) => {
     const newOption = addOption(parentId) // ui
@@ -281,210 +513,6 @@ export default function QuestionList({ initial }: { initial: Form }) {
   
 
 
-  const localSaveProcessedFormActions = (data: FormAction[]) => {
-    const local = localStorage.getItem('processedFormActions') ?? '';
-    const currentSaved = local ? JSON.parse(local) : [];
-    localStorage.setItem('processedFormActions', JSON.stringify([...currentSaved, data].flat()));
-  }
-
-  async function handleSave () {
-    setIsSaving(true)
-    const localData = processFormActions();
-    if (!localData || localData.length < 1) {
-      setIsSaving(false)
-      alert('No changes to save')
-      return;
-    }
-
-    if (!isOnline) {
-      setIsSaving(false)
-      alert('You are offline. Changes saved locally and will be synced when back online.')
-      return;
-    } else {
-      const saving: SaveForm = {
-        formId: formId,
-        data: localData
-      }
-      const data: Response = await save(saving)
-      if (data) {
-        setIsSaving(false)
-        alert(data.message)
-      }
-    }
-  }
-
-  const getLocalSavedRawFormAction = (): FormAction[] | undefined  => {
-    const data = JSON.parse(localStorage.getItem('rawFormActions') ?? '[]');
-    localStorage.removeItem('rawFormActions');
-    return data;
-  }
-
-  const getLocalSavedProcessedFormAction = (): FormAction[] | undefined  => {
-    const data = JSON.parse(localStorage.getItem('processedFormActions') ?? '[]');
-    localStorage.removeItem('processedFormActions');
-    return data;
-  }
-
-  const findFormActionIndex = (data: FormAction[], id: UniqueIdentifier): number => { 
-    return data.findIndex(d => d.id === id);
-  }
-
-  const reduceFormAction = (data: FormAction[]): FormAction[] | undefined => {
-    const temp:FormAction[] = [];
-    let index: number;
-    let arrangeQuestionsIndex: number;
-    let arrangeOptionsIndex: number;
-    data.forEach(d => {
-      switch(d.action) {
-        case 'addOption':
-          temp.push(d);
-          break;
-        case 'add':
-          temp.push(d);
-          break;
-        case 'delete':
-          index = findFormActionIndex(temp, d.id);
-          if (index == -1) {
-            temp.push(d);
-          } else {
-            if (temp[index].action == 'add' || temp[index].action == 'addUpdate') { // remove, do not send to database
-              temp.splice(index, 1);
-              return;
-            } 
-            temp[index] = { // if already in the database, we must delete it by sending this.
-              action: 'delete',
-              id: d.id,
-            }
-          }
-          break;
-        case 'deleteOption':
-          index = findFormActionIndex(temp, d.id);
-          if (index == -1) {
-            temp.push(d);
-          } else {
-            if (temp[index].action == 'addOption' || temp[index].action == 'addUpdateOption') { // remove, do not send to database
-              temp.splice(index, 1);
-              return;
-            } 
-            temp[index] = { // if already in the database, we must delete it by sending this.
-              action: 'deleteOption',
-              id: d.id,
-            }
-          }
-          break;
-        case 'update':
-          index = findFormActionIndex(temp, d.id);
-          if (index == -1) {
-            temp.push(d);
-          } else {
-           
-            if (temp[index].action == 'add') {
-              temp[index] = {
-                action: 'addUpdate',
-                id: d.id,
-                title: d.title ? d.title : 'Untitled question',
-                type: d.type ? d.type : 'short-text'
-              }
-              return;
-            }
-            temp[index] = {
-              action: (temp[index].action == 'addUpdate') ? 'addUpdate' : 'update',
-              id: d.id,
-              title: d.title ? d.title : temp[index].title,
-              type: d.type ? d.type : temp[index].type,
-            }
-          }
-          break;
-        case 'updateOption':
-          index = findFormActionIndex(temp, d.id);
-          if (index == -1) {
-            temp.push(d);
-          } else {
-           
-            if (temp[index].action == 'addOption') {
-              temp[index] = {
-                ...d,
-                action: 'addUpdateOption',
-              }
-              return;
-            }
-            temp[index] = {
-              ...d,
-              action: (temp[index].action == 'addUpdateOption') ? 'addUpdateOption' : 'updateOption',
-            }
-          }
-          break;
-        case 'arrangeQuestions':
-          arrangeQuestionsIndex = temp.findIndex(d => d.action === 'arrangeQuestions');
-          if (arrangeQuestionsIndex == -1) {
-            temp.push(d);
-          } else {
-            temp[arrangeQuestionsIndex] = d;
-          }
-          break;
-        case 'arrangeOptions':
-          arrangeOptionsIndex = temp.findIndex(d => d.action === 'arrangeOptions');
-  
-          if (arrangeOptionsIndex === -1) {
-            temp.push(d);
-          } else {
-            // Narrow both to arrangeOptions variant
-            const existing = temp[arrangeOptionsIndex] as Extract<FormAction, { action: 'arrangeOptions' }>;
-            const incoming = d as Extract<FormAction, { action: 'arrangeOptions' }>;
-            
-            // Now both have order: Orders[]
-            const allOrders = [...(existing.order ?? []), ...(incoming.order ?? [])];
-            
-            // Merge duplicate question_ids
-            const temp_order: Orders[] = [];
-            allOrders.forEach(o => {
-              const idx = temp_order.findIndex(t => t.question_id === o.question_id);
-              if (idx === -1) {
-                temp_order.push(o);
-              } else {
-                // Merge option_orders for same question
-                temp_order[idx].option_order = [
-                  ...o.option_order
-                ];
-              }
-            });
-            
-            temp[arrangeOptionsIndex] = {
-              action: 'arrangeOptions',
-              order: temp_order
-            };
-          }
-          break;
-      }
-    });
-    return temp;
-  }
-
-  const processFormActions = (): FormAction[] | undefined => {
-    const formActions: FormAction[] = [];
-
-    const localDraft: FormAction[] | undefined = getLocalSavedProcessedFormAction();
-    if (localDraft) {
-      formActions.push(...localDraft);
-    }
-  
-    const localData: FormAction[] | undefined = getLocalSavedRawFormAction();
-    if (localData) {
-      formActions.push(...localData);
-    }
-
-    const reduced = reduceFormAction(formActions)
-
-    if (!reduced) {
-      alert('No draft found to save locally.')
-      return;
-    }
-
-    localSaveProcessedFormActions(reduced)
-
-    return reduced;
-  }
-
   const [activeItem, setActiveItem] = useState<ActiveDrag | null>(null);
 
   function handleDragStart(e: DragStartEvent) {
@@ -592,6 +620,10 @@ export default function QuestionList({ initial }: { initial: Form }) {
     }
   };
 
+  const handleAutosaveToggle = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setAutosaveMode(event.target.checked);
+  };
+
   return (
     <>
       {isOnline ? (
@@ -599,10 +631,12 @@ export default function QuestionList({ initial }: { initial: Form }) {
       ) : (
         <p>You are currently offline. Please check your internet connection.</p>
       )}
-      <button onClick={() => console.log(items)}>show items</button>
-      <button onClick={handleSave} className="mb-4 ml-4 p-4 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
-        {isSaving ? 'Saving...' : 'Save'}
+      {/* <button onClick={() => console.log(items)}>show items</button> */}
+      <span className="m-4">{savingStatus}</span>
+      <button onClick={handleSave} disabled={savingStatus != 'saved'} className="mb-4 ml-4 p-4 bg-blue-600 text-white rounded hover:bg-blue-700 transition disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed">
+        {savingStatus != 'saved' ? 'saving...' : 'Save'}
       </button>
+      <label className="m-4" htmlFor="toggle-autosave">Autosave <input type="radio" checked={autosaveMode} onChange={handleAutosaveToggle}/></label>
       <button onClick={handleAddQuestion} className="mb-4 ml-4 p-4 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
         Add question
       </button>
