@@ -38,7 +38,7 @@ export default function QuestionItem({ item, onAddOption, onRemoveQuestion, onRe
 
   // optional: skip initial run
   const first = useRef(true);
-  const DELAY = 1500;
+  const DELAY = 1000;
   useEffect(() => {
     if (first.current) { first.current = false; return; }
     if (draft === item.title) return; // no-op

@@ -37,7 +37,7 @@ export default function OptionItem({ item, parentId, onRemoveOption, onChangeOpt
   useEffect(()=>{onChangeTitle.current = onChangeOptionTitle}, [onChangeOptionTitle])
 
   const first = useRef(true);
-  const DELAY = 1500;
+  const DELAY = 1000;
 
   useEffect(()=>{
     if (first.current) {first.current = false; return};
