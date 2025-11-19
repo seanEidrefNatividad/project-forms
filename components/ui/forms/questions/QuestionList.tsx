@@ -622,8 +622,8 @@ export default function QuestionList({ initial }: { initial: Form }) {
 
   const handleAutosaveToggle = (event: React.ChangeEvent<HTMLInputElement>) => {
     setAutosaveMode(event.target.checked);
+    if (localStorage.getItem('processedFormActions') || localStorage.getItem('rawFormActions')) setSavingStatus('saving...')
   };
-
   return (
     <>
       {isOnline ? (
@@ -636,7 +636,7 @@ export default function QuestionList({ initial }: { initial: Form }) {
       <button onClick={handleSave} disabled={savingStatus != 'saved'} className="mb-4 ml-4 p-4 bg-blue-600 text-white rounded hover:bg-blue-700 transition disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed">
         {savingStatus != 'saved' ? 'saving...' : 'Save'}
       </button>
-      <label className="m-4" htmlFor="toggle-autosave">Autosave <input type="radio" checked={autosaveMode} onChange={handleAutosaveToggle}/></label>
+      <label className="m-4" htmlFor="toggle-autosave">Autosave <input id="toggle-autosave" type="checkbox" checked={autosaveMode} onChange={handleAutosaveToggle}/></label>
       <button onClick={handleAddQuestion} className="mb-4 ml-4 p-4 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
         Add question
       </button>
