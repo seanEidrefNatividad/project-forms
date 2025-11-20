@@ -2,7 +2,27 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { hasEnvVars } from "../utils";
 
+const PUBLIC_FILES = [
+  '/manifest.webmanifest',
+  '/manifest.json',
+  '/sw.js',
+  '/workbox.js',
+  '/robots.txt',
+  '/sitemap.xml',
+  // icons
+  /^\/icons\/.*/i,
+  // images, assets (optional)
+  /^\/_next\/.*/i,
+]
+
 export async function updateSession(request: NextRequest) {
+  const { pathname } = request.nextUrl
+
+  // Skip auth for public files
+  if (PUBLIC_FILES.some(p => typeof p === 'string' ? pathname === p : p.test(pathname))) {
+    return NextResponse.next()
+  }
+
   let supabaseResponse = NextResponse.next({
     request,
   });
