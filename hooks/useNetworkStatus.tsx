@@ -9,9 +9,9 @@ type NetState = {
 
 const PING_URL = '/ping.txt'; // put a 1–byte file in /public
 const PING_OPTS: RequestInit = {
+  method: 'HEAD',
   cache: 'no-store',
   credentials: 'omit',
-  headers: { 'cache-control': 'no-cache' },
 };
 
 async function checkReachable(signal?: AbortSignal): Promise<boolean> {
