@@ -23,6 +23,7 @@ import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
 import {save} from "@/lib/actions"
 import useNetworkStatus from '@/hooks/useNetworkStatus'; // Adjust path as needed
+import NetworkBanner from '@/components/ui/dashboard/network-banner';
 
 const typeAwareClosestCenter: CollisionDetection = (args) => {
   const { active, droppableContainers } = args;
@@ -44,7 +45,8 @@ import type { Option, Item, Form, QuestionType, ActiveDrag, SaveForm, FormAction
 export default function QuestionList({ initial }: { initial: Form }) {
   const [items, setItems] = useState<Item[]>(initial.questions || []);
   const [formId] = useState(() => initial.id);
-  const isOnline = useNetworkStatus();
+  const {online, reachable} = useNetworkStatus(150);
+  const isOnline = online && reachable; 
   const arrangeQuestions = useRef(false);
   const arrangeOptions = useRef(false);
   const arrangeOptionsQuestionIds = useRef<UniqueIdentifier[]>([]);
@@ -682,6 +684,9 @@ export default function QuestionList({ initial }: { initial: Form }) {
           ) : null}
         </DragOverlay>
       </DndContext>
+      <div className="w-full bg-green-500">
+        <NetworkBanner />
+      </div>
     </>
   );
 }

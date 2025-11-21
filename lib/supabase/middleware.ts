@@ -9,6 +9,7 @@ const PUBLIC_FILES = [
   '/workbox.js',
   '/robots.txt',
   '/sitemap.xml',
+  '/ping.txt',
   // icons
   /^\/icons\/.*/i,
   // images, assets (optional)
