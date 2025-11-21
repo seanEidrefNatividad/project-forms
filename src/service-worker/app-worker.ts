@@ -20,8 +20,8 @@ const bypass: RuntimeCaching = {
 }
 
 const runtimeCaching = [
+  bypass,
   ...defaultCache,
-  bypass
 ];
 
 declare const self: ServiceWorkerGlobalScope;
