@@ -7,17 +7,18 @@ type NetState = {
   type?: string;            // e.g., '4g', '3g' (if available)
 };
 
-const PING_URL = '/ping.txt'; // put a 1–byte file in /public
-const PING_OPTS: RequestInit = {
-  method: 'GET',
-  cache: 'no-store',
-  credentials: 'omit',
-};
+// const PING_URL = '/ping.txt'; // put a 1–byte file in /public
+// const PING_OPTS: RequestInit = {
+//   method: 'GET',
+//   cache: 'no-store',
+//   credentials: 'omit',
+// };
 
 async function checkReachable(signal?: AbortSignal): Promise<boolean> {
   try {
-    const res = await fetch(`${PING_URL}?t=${Date.now()}`, { ...PING_OPTS, signal });
-    return res.ok;
+    //const res = await fetch(`${PING_URL}?t=${Date.now()}`, { ...PING_OPTS, signal });
+    //return res.ok;
+    return true;
   } catch {
     return false;
   }
