@@ -19,10 +19,6 @@ const PUBLIC_FILES = [
 export async function updateSession(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  if (request.method === 'OPTIONS') {
-    return NextResponse.next();
-  }
-
   // Skip auth for public files
   if (PUBLIC_FILES.some(p => typeof p === 'string' ? pathname === p : p.test(pathname))) {
     return NextResponse.next()
