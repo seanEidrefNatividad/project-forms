@@ -12,6 +12,7 @@ const PING_OPTS: RequestInit = {
   method: 'HEAD',
   cache: 'no-store',
   credentials: 'omit',
+  headers: { 'cache-control': 'no-cache' },
 };
 
 async function checkReachable(signal?: AbortSignal): Promise<boolean> {
