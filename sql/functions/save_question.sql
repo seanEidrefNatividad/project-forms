@@ -182,6 +182,43 @@ select jsonb_build_object(
 );
 $$;
 
+create or replace function fetch_filtered_forms()
+returns table (
+  owner_email text,
+  id uuid,
+  owner_id uuid,
+  title text,
+  created_at timestamptz,
+  perm_user_id uuid,
+  perm_role text
+)
+language sql
+stable
+security definer
+set search_path = public, auth
+as $$
+  select
+    o.email as owner_email,
+    f.id,
+    f.owner_id,
+    f.title,
+    f.created_at,
+    fp.user_id  as perm_user_id,
+    fp.role     as perm_role
+  from forms f
+  left join form_permissions fp 
+    on f.id = fp.form_id 
+  -- owner email
+  left join auth.users o
+    on o.id = f.owner_id
+  where
+    f.owner_id = auth.uid()
+    or (
+      fp.user_id = auth.uid()
+      and fp.role = 'editor'
+    );
+$$;
+
 -- remove_question as (
 --   insert into questions (form_id, id, is_deleted)
 --   select

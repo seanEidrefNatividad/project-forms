@@ -33,6 +33,9 @@ export default async function FormTable({
                   title
                 </th>
                 <th>
+                  owner
+                </th>
+                <th>
                   actions
                 </th>
                 {/* <th scope="col" className="px-3 py-5 font-medium">
@@ -54,6 +57,9 @@ export default async function FormTable({
                 >
                   <td className="whitespace-nowrap px-3 py-3">
                     <p>{form.title}</p>
+                  </td>
+                   <td className="whitespace-nowrap px-3 py-3">
+                    <p>{form.owner_email}</p>
                   </td>
                   <td>
                   <Link href={`/dashboard/${form.id}/forms`}>
