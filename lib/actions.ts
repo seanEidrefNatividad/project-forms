@@ -41,11 +41,16 @@ const uid = () => crypto?.randomUUID?.();
 
 export async function createForm() {
   const supabase = await createClient();
+  // use getUser – simpler & stable
+  const { data: { user }, error: e1} = await supabase.auth.getUser();
+  if (!user || e1) { // not working, only show next thrown errors in dev or do nothing in Development
+    redirect("/");
+  }
   const id = uid();
 
   const { error } = await supabase
     .from('forms')
-    .insert([{ id }])
+    .insert([{ id, owner_id: user.id }])
 
   if (error) throw error;
 
