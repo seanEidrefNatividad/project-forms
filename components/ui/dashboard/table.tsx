@@ -4,7 +4,7 @@
 // import { createClient } from "@/lib/supabase/client";
 import {fetchFilteredForms} from "@/lib/data"
 import Link from "next/link";
-import type { FormList } from '@/src/types';
+// import type { FormList } from '@/src/types';
 
 // import { UpdateInvoice, DeleteInvoice } from '@/app/ui/invoices/buttons';
 // import InvoiceStatus from '@/app/ui/invoices/status';
@@ -28,7 +28,7 @@ export default async function FormTable({
         <div className="rounded-lg p-2 md:pt-0 bg-card">
         
           <div className="md:hidden">
-            {forms?.map((form: FormList) => (
+            {forms?.map((form) => (
               <div
                 key={form.id}
                 className="mb-2 w-full rounded-md p-4 border-b-2 border-background last-of-type:border-none"
@@ -70,7 +70,7 @@ export default async function FormTable({
               </tr>
             </thead>
             <tbody>
-              {forms?.map((form:FormList) => (
+              {forms?.map((form) => (
                 <tr
                   key={form.id}
                   className="w-full border-b-2 border-background text-sm last-of-type:border-none [&:first-child>td:first-child]:rounded-tl-lg [&:first-child>td:last-child]:rounded-tr-lg [&:last-child>td:first-child]:rounded-bl-lg [&:last-child>td:last-child]:rounded-br-lg"
