@@ -1,4 +1,5 @@
 import { type UniqueIdentifier} from "@dnd-kit/core"
+import { UUID } from "crypto";
 
 type ActiveQuestion = { type: "question"; item: Item };
 type ActiveOption   = { type: "option"; item: Option; parentId: UniqueIdentifier };
@@ -104,4 +105,14 @@ export type Orders = {
 }
 export type Response = {
   message: 'success' | 'fail' | string
+}
+
+export type FormList = {
+  id: UniqueIdentifier;
+  title: string;
+  owner_id: UniqueIdentifier;
+  owner_email: string;
+  created_at: string;
+  perm_user_id: UniqueIdentifier | null;
+  perm_role: 'editor' | null;
 }
