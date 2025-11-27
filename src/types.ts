@@ -1,5 +1,4 @@
 import { type UniqueIdentifier} from "@dnd-kit/core"
-import { UUID } from "crypto";
 
 type ActiveQuestion = { type: "question"; item: Item };
 type ActiveOption   = { type: "option"; item: Option; parentId: UniqueIdentifier };
