@@ -3,7 +3,7 @@
 import NoSSRQuestionList from "@/components/ui/forms/forms";
 import type { Form } from "@/src/types.ts" 
 import { createClient } from "@/lib/supabase/server";
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 
 export const revalidate = 0;
 
@@ -13,6 +13,34 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
   let formData: Form =  {id:'', title: '', description: '', questions: []};
 
   const supabase = await createClient();
+
+  const { data: {user}, error: err} = await supabase.auth.getUser();
+  if (!user || err) { // not working, only show next thrown errors in dev or do nothing in Development
+    redirect("/");
+  }
+
+  // 1. Check if user is OWNER
+  const { data: ownerData } = await supabase
+    .from("forms")
+    .select("id")
+    .eq("id", params.id)
+    .eq("owner_id", user.id)
+    .maybeSingle();
+
+  // 2. Check if user is EDITOR (shared permission)
+  const { data: editorData } = await supabase
+    .from("forms-permissions")
+    .select("form_id")
+    .eq("form_id", params.id)
+    .eq("user_id", user.id)
+    .eq("role", "editor")
+    .maybeSingle();
+
+  // 3. If neither owner nor editor → deny access
+  console.log('access: ', ownerData, editorData)
+  if (!ownerData && !editorData) {
+    redirect(`/dashboard/${params.id}/access-denied`);
+  }
 
   const { data, error } = await supabase
     .from('forms')
@@ -28,6 +56,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
     .eq('id', params.id)
     .eq('questions.is_deleted', false)
     .eq('questions.options.is_deleted', false)
+    .eq('owner_id', user.id)
     .order('position', { foreignTable: 'questions', ascending: true })
     .order('position', { foreignTable: 'questions.options',  ascending: true })
     .maybeSingle();
