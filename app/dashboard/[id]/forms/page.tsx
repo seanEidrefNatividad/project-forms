@@ -29,7 +29,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
 
   // 2. Check if user is EDITOR (shared permission)
   const { data: editorData } = await supabase
-    .from("forms-permissions")
+    .from("form_permissions")
     .select("form_id")
     .eq("form_id", params.id)
     .eq("user_id", user.id)
@@ -56,7 +56,6 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
     .eq('id', params.id)
     .eq('questions.is_deleted', false)
     .eq('questions.options.is_deleted', false)
-    .eq('owner_id', user.id)
     .order('position', { foreignTable: 'questions', ascending: true })
     .order('position', { foreignTable: 'questions.options',  ascending: true })
     .maybeSingle();
