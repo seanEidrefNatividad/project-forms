@@ -11,7 +11,7 @@ export default function CreateForm() {
   }
 
   return (
-    <button className='inline-flex items-center justify-center gap-2 rounded-md bg-blue-600 text-white rounded hover:bg-blue-700 p-3 m-4 transition'
+    <button className='rounded-md bg-blue-600 text-white hover:bg-blue-700 p-3 transition'
       onClick={() => handleClick()}
       disabled={isLoading}>
       {isLoading ? "Creating..." : "Create Form"}

@@ -23,7 +23,7 @@ export default async function FormTable({
   
   
   return (
-    <div className="mt-6 flow-root mx-auto max-w-screen-md">
+    <div className="mt-6 flow-root mx-auto max-w-screen-lg">
       <div className="inline-block min-w-full align-middle">
         <div className="rounded-lg p-2 md:pt-0 bg-card">
         
