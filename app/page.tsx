@@ -1,5 +1,6 @@
 import Link from "next/link";
 import TopNav from '@/components/ui/dashboard/top-nav';
+import { FaRegHandPointer } from "react-icons/fa";
 
 export default function Home() {
   // redirect('/dashboard');
@@ -24,7 +25,7 @@ export default function Home() {
                 <h2 className="font-medium text-lg mb-4">
                   Forms &nbsp;
                   <span className="text-xs text-muted-foreground">
-                    (click to view)
+                    <i className="inline-flex"><FaRegHandPointer /></i> (click to view)
                   </span>
                 </h2>
                 <p>A dynamic form-builder web app that lets you create custom forms, collect responses, and view analytics.</p>
