@@ -72,11 +72,15 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname !== "/" &&
     !user &&
     !request.nextUrl.pathname.startsWith("/login") &&
-    !request.nextUrl.pathname.startsWith("/auth")
+    !request.nextUrl.pathname.startsWith("/auth") 
   ) {
     // no user, potentially respond by redirecting the user to the login page
     const url = request.nextUrl.clone();
     url.pathname = "/auth/login";
+    if (request.nextUrl.pathname.startsWith("/dashboard")) {
+      const callbackUrl = request.nextUrl.pathname
+      url.searchParams.set('callbackUrl', callbackUrl);
+    } 
     return NextResponse.redirect(url);
   }
 

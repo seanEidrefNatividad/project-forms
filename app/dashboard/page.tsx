@@ -10,7 +10,7 @@ export default function Page() {
     <>
       <div className='max-w-5xl mx-auto'>
         <div>
-          <span className='text-xs'>Sean Eidref Natividad's</span>
+          <span className='text-xs'>Sean Eidref Natividad&apos;s</span>
           <p className='text-lg'>
             Forms | Dashboard
           </p>
